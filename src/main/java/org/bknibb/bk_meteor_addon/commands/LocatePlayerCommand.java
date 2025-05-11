@@ -30,7 +30,7 @@ import java.time.Instant;
 
 public class LocatePlayerCommand extends Command {
     public LocatePlayerCommand() {
-        super("locatePlayer", "Will temporarily show a tracer to the player for 5 seconds.");
+        super("locate-player", "Will temporarily show a tracer to the player for 5 seconds.");
     }
 
     private PlayerEntity targetPlayer;
@@ -43,7 +43,7 @@ public class LocatePlayerCommand extends Command {
 
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
-        builder.then(argument("player", PlayerArgumentType.create())).executes(context -> {
+        builder.then(argument("player", PlayerArgumentType.create()).executes(context -> {
             PlayerEntity player = PlayerArgumentType.get(context);
             targetPlayer = player;
             startTimer = Instant.now();
@@ -52,7 +52,7 @@ public class LocatePlayerCommand extends Command {
                 MeteorClient.EVENT_BUS.subscribe(this);
             }
             return SINGLE_SUCCESS;
-        });
+        }));
     }
     @EventHandler
     private void onRender(Render3DEvent event) {
