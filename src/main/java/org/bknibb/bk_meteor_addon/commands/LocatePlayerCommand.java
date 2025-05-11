@@ -8,7 +8,11 @@ import meteordevelopment.meteorclient.commands.arguments.PlayerArgumentType;
 import meteordevelopment.meteorclient.events.render.Render2DEvent;
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
 import meteordevelopment.meteorclient.renderer.Renderer2D;
+import meteordevelopment.meteorclient.systems.config.Config;
+import meteordevelopment.meteorclient.systems.friends.Friends;
+import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.utils.Utils;
+import meteordevelopment.meteorclient.utils.entity.EntityUtils;
 import meteordevelopment.meteorclient.utils.entity.Target;
 import meteordevelopment.meteorclient.utils.player.PlayerUtils;
 import meteordevelopment.meteorclient.utils.render.NametagUtils;
@@ -16,6 +20,7 @@ import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import meteordevelopment.meteorclient.utils.render.color.Color;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -36,10 +41,7 @@ public class LocatePlayerCommand extends Command {
     private PlayerEntity targetPlayer;
     private boolean running = false;
     private Instant startTimer;
-    private final Color playerColor = new Color(205, 205, 205, 127);
     private final long showTime = 5;
-    private final Target target = Target.Body;
-    private final boolean stem = true;
 
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
@@ -54,26 +56,76 @@ public class LocatePlayerCommand extends Command {
             return SINGLE_SUCCESS;
         }));
     }
+
     @EventHandler
     private void onRender(Render3DEvent event) {
-        if (Instant.now().isAfter(startTimer.plusSeconds(showTime))) {
+        if (Modules.get().get(PlayerTracers.class).style.get() != PlayerTracers.TracerStyle.Offscreen && Instant.now().isAfter(startTimer.plusSeconds(showTime))) {
             running = false;
             MeteorClient.EVENT_BUS.unsubscribe(this);
             return;
         }
-        if (mc.options.hudHidden) return;
 
-        Color color = PlayerUtils.getPlayerColor((targetPlayer), playerColor);
+        if (mc.options.hudHidden || Modules.get().get(PlayerTracers.class).style.get() == PlayerTracers.TracerStyle.Offscreen) return;
+        Color color =  Modules.get().get(PlayerTracers.class).getEntityColor(targetPlayer);
 
         double x = targetPlayer.prevX + (targetPlayer.getX() - targetPlayer.prevX) * event.tickDelta;
         double y = targetPlayer.prevY + (targetPlayer.getY() - targetPlayer.prevY) * event.tickDelta;
         double z = targetPlayer.prevZ + (targetPlayer.getZ() - targetPlayer.prevZ) * event.tickDelta;
 
         double height = targetPlayer.getBoundingBox().maxY - targetPlayer.getBoundingBox().minY;
-        if (target == Target.Head) y += height;
-        else if (target == Target.Body) y += height / 2;
+        if (Modules.get().get(PlayerTracers.class).target.get() == Target.Head) y += height;
+        else if (Modules.get().get(PlayerTracers.class).target.get() == Target.Body) y += height / 2;
 
         event.renderer.line(RenderUtils.center.x, RenderUtils.center.y, RenderUtils.center.z, x, y, z, color);
-        if (stem) event.renderer.line(x, targetPlayer.getY(), z, x, targetPlayer.getY() + height, z, color);
+        if (Modules.get().get(PlayerTracers.class).stem.get()) event.renderer.line(x, targetPlayer.getY(), z, x, targetPlayer.getY() + height, z, color);
+    }
+
+    @EventHandler
+    public void onRender2D(Render2DEvent event) {
+        if (Modules.get().get(PlayerTracers.class).style.get() == PlayerTracers.TracerStyle.Offscreen && Instant.now().isAfter(startTimer.plusSeconds(showTime))) {
+            running = false;
+            MeteorClient.EVENT_BUS.unsubscribe(this);
+            return;
+        }
+        if (MinecraftClient.getInstance().options.hudHidden || Modules.get().get(PlayerTracers.class).style.get() != PlayerTracers.TracerStyle.Offscreen) return;
+
+        Renderer2D.COLOR.begin();
+
+        Color color = Modules.get().get(PlayerTracers.class).getEntityColor(targetPlayer);
+
+        if (Modules.get().get(PlayerTracers.class).blinkOffscreen.get())
+            color.a *= Modules.get().get(PlayerTracers.class).getAlpha();
+
+        Vec2f screenCenter = new Vec2f(MinecraftClient.getInstance().getWindow().getFramebufferWidth() / 2.f, mc.getWindow().getFramebufferHeight() / 2.f);
+
+        Vector3d projection = new Vector3d(targetPlayer.prevX, targetPlayer.prevY, targetPlayer.prevZ);
+        boolean projSucceeded = NametagUtils.to2D(projection, 1, false, false);
+
+        if (projSucceeded && projection.x > 0.f && projection.x < mc.getWindow().getFramebufferWidth() && projection.y > 0.f && projection.y < mc.getWindow().getFramebufferHeight())
+            return;
+
+        projection = new Vector3d(targetPlayer.prevX, targetPlayer.prevY, targetPlayer.prevZ);
+        NametagUtils.to2D(projection, 1, false, true);
+
+        Vector2f angle = Modules.get().get(PlayerTracers.class).vectorAngles(new Vector3d(screenCenter.x - projection.x, screenCenter.y - projection.y, 0));
+        angle.y += 180;
+
+        float angleYawRad = (float) Math.toRadians(angle.y);
+
+        Vector2f newPoint = new Vector2f(screenCenter.x + Modules.get().get(PlayerTracers.class).distanceOffscreen.get() * (float) Math.cos(angleYawRad),
+                screenCenter.y + Modules.get().get(PlayerTracers.class).distanceOffscreen.get() * (float) Math.sin(angleYawRad));
+
+        Vector2f[] trianglePoints = {
+                new Vector2f(newPoint.x - Modules.get().get(PlayerTracers.class).sizeOffscreen.get(), newPoint.y - Modules.get().get(PlayerTracers.class).sizeOffscreen.get()),
+                new Vector2f(newPoint.x + Modules.get().get(PlayerTracers.class).sizeOffscreen.get() * 0.73205f, newPoint.y),
+                new Vector2f(newPoint.x - Modules.get().get(PlayerTracers.class).sizeOffscreen.get(), newPoint.y + Modules.get().get(PlayerTracers.class).sizeOffscreen.get())
+        };
+
+        Modules.get().get(PlayerTracers.class).rotateTriangle(trianglePoints, angle.y);
+
+        Renderer2D.COLOR.triangle(trianglePoints[0].x, trianglePoints[0].y, trianglePoints[1].x, trianglePoints[1].y, trianglePoints[2].x,
+                trianglePoints[2].y, color);
+
+        Renderer2D.COLOR.render(null);
     }
 }

@@ -4,6 +4,7 @@ import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import org.bknibb.bk_meteor_addon.modules.MineplayRemoveOfflineRobloxPlayers;
 
 public class MineplayUtils {
@@ -18,6 +19,12 @@ public class MineplayUtils {
             return false;
         }
         return entry.getDisplayName().getStyle().getColor().getRgb() == 0xFF999B;
+    }
+    public static boolean isRobloxPlayer(PlayerListS2CPacket.Entry entry) {
+        if (entry == null || entry.displayName() == null || entry.displayName().getStyle().getColor() == null) {
+            return false;
+        }
+        return entry.displayName().getStyle().getColor().getRgb() == 0xFF999B;
     }
     public static boolean isDisconnectedPlayer(PlayerEntity player) {
         MinecraftClient client = MinecraftClient.getInstance();
@@ -40,6 +47,10 @@ public class MineplayUtils {
     public static boolean isDisconnectedPlayer(PlayerListEntry entry) {
         if (!isRobloxPlayer(entry)) return false;
         return entry.getLatency() == 0;
+    }
+    public static boolean isDisconnectedPlayer(PlayerListS2CPacket.Entry entry) {
+        if (!isRobloxPlayer(entry)) return false;
+        return entry.latency() == 0;
     }
     public static boolean isOnMineplay() {
         MinecraftClient client = MinecraftClient.getInstance();

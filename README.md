@@ -4,7 +4,7 @@ This meteor addon adds a few useful commands and modules, with some features for
 
 ## Commands
 
-- `.locatePlayer`: Will temporarily show a tracer to the player for 5 seconds.
+- `.locate-player`: Will temporarily show a tracer to the player for 5 seconds.
 
 ## Modules
 

@@ -67,14 +67,14 @@ public class PlayerTracers extends Module {
         .build()
     );
 
-    private final Setting<TracerStyle> style = sgAppearance.add(new EnumSetting.Builder<TracerStyle>()
+    public final Setting<TracerStyle> style = sgAppearance.add(new EnumSetting.Builder<TracerStyle>()
         .name("style")
         .description("What display mode should be used")
         .defaultValue(TracerStyle.Lines)
         .build()
     );
 
-    private final Setting<Target> target = sgAppearance.add(new EnumSetting.Builder<Target>()
+    public final Setting<Target> target = sgAppearance.add(new EnumSetting.Builder<Target>()
         .name("target")
         .description("What part of the entity to target.")
         .defaultValue(Target.Body)
@@ -82,7 +82,7 @@ public class PlayerTracers extends Module {
         .build()
     );
 
-    private final Setting<Boolean> stem = sgAppearance.add(new BoolSetting.Builder()
+    public final Setting<Boolean> stem = sgAppearance.add(new BoolSetting.Builder()
         .name("stem")
         .description("Draw a line through the center of the tracer target.")
         .defaultValue(true)
@@ -99,7 +99,7 @@ public class PlayerTracers extends Module {
         .build()
     );
 
-    private final Setting<Integer> distanceOffscreen = sgAppearance.add(new IntSetting.Builder()
+    public final Setting<Integer> distanceOffscreen = sgAppearance.add(new IntSetting.Builder()
         .name("distance-offscreen")
         .description("Offscreen's distance from center.")
         .defaultValue(200)
@@ -109,7 +109,7 @@ public class PlayerTracers extends Module {
         .build()
     );
 
-    private final Setting<Integer> sizeOffscreen = sgAppearance.add(new IntSetting.Builder()
+    public final Setting<Integer> sizeOffscreen = sgAppearance.add(new IntSetting.Builder()
         .name("size-offscreen")
         .description("Offscreen's size.")
         .defaultValue(10)
@@ -119,7 +119,7 @@ public class PlayerTracers extends Module {
         .build()
     );
 
-    private final Setting<Boolean> blinkOffscreen = sgAppearance.add(new BoolSetting.Builder()
+    public final Setting<Boolean> blinkOffscreen = sgAppearance.add(new BoolSetting.Builder()
         .name("blink-offscreen")
         .description("Make offscreen Blink.")
         .defaultValue(true)
@@ -182,7 +182,7 @@ public class PlayerTracers extends Module {
         return !PlayerUtils.isWithin(entity, maxDist.get()) || (!showInvis.get() && entity.isInvisible()) | !EntityUtils.isInRenderDistance(entity);
     }
 
-    private Color getEntityColor(Entity entity) {
+    public Color getEntityColor(Entity entity) {
         Color color;
 
         if (distance.get()) {
@@ -274,7 +274,7 @@ public class PlayerTracers extends Module {
         Renderer2D.COLOR.render(null);
     }
 
-    private void rotateTriangle(Vector2f[] points, float ang) {
+    public void rotateTriangle(Vector2f[] points, float ang) {
         Vector2f triangleCenter = new Vector2f(0, 0);
         triangleCenter.add(points[0]).add(points[1]).add(points[2]).div(3.f);
         float theta = (float)Math.toRadians(ang);
@@ -290,7 +290,7 @@ public class PlayerTracers extends Module {
         }
     }
 
-    private Vector2f vectorAngles(final Vector3d forward) {
+    public Vector2f vectorAngles(final Vector3d forward) {
         float tmp, yaw, pitch;
 
         if (forward.x == 0 && forward.y == 0) {
@@ -313,7 +313,7 @@ public class PlayerTracers extends Module {
         return new Vector2f(pitch, yaw);
     }
 
-    private float getAlpha() {
+    public float getAlpha() {
         double speed = blinkOffscreenSpeed.get() / 4.0;
         double duration = Math.abs(Duration.between(Instant.now(), initTimer).toMillis()) * speed;
 
