@@ -86,6 +86,11 @@ jobs:
 #          files: |
 #            ./build/libs/*.jar
       - name: Release
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: ./build/libs/*.jar
+      - name: Release
         if: needs.detect.outputs.is_release == 'true'
         uses: softprops/action-gh-release@v2
         with:
