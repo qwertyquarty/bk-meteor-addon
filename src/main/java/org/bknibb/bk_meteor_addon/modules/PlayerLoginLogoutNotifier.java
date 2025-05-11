@@ -9,6 +9,7 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
@@ -16,10 +17,12 @@ import net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import net.minecraft.util.collection.ArrayListDeque;
 import org.bknibb.bk_meteor_addon.BkMeteorAddon;
 import org.bknibb.bk_meteor_addon.MineplayUtils;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -44,6 +47,15 @@ public class PlayerLoginLogoutNotifier extends Module {
         .build()
     );
 
+    private final Setting<Integer> joinDataDelay = sgGeneral.add(new IntSetting.Builder()
+        .name("join-data-delay")
+        .description("How long to wait in ticks before posting the next join/leave notification in your chat.")
+        .range(0, 10000)
+        .sliderRange(0, 10000)
+        .defaultValue(100)
+        .build()
+    );
+
     private final Setting<Boolean> customMineplayNotifications = sgGeneral.add(new BoolSetting.Builder()
         .name("custom-mineplay-notifications")
         .description("Display join/leave notifications similar to the normal ones normally on mineplay (for mineplay).")
@@ -51,9 +63,23 @@ public class PlayerLoginLogoutNotifier extends Module {
         .build()
     );
 
+    private final Setting<MineplayPlatformType> mineplayPlatformFilter = sgGeneral.add(new EnumSetting.Builder<MineplayPlatformType>()
+        .name("mineplay-platform-filter")
+        .description("Mineplay Platform Filter.")
+        .defaultValue(MineplayPlatformType.BOTH)
+        .build()
+    );
+
     private final Setting<Boolean> simpleNotifications = sgGeneral.add(new BoolSetting.Builder()
         .name("simple-notifications")
         .description("Display join/leave notifications without a prefix, to reduce chat clutter.")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Boolean> ignoreSelf = sgGeneral.add(new BoolSetting.Builder()
+        .name("ignore-self")
+        .description("Ignores any join/leave messages from yourself (usually caused by vanish).")
         .defaultValue(true)
         .build()
     );
@@ -83,6 +109,7 @@ public class PlayerLoginLogoutNotifier extends Module {
     //private boolean loginPacket = true;
     private final ArrayListDeque<Text> messageQueue = new ArrayListDeque<>();
     private List<String> onlineRobloxPlayers = new ArrayList<>();
+    private final ArrayListDeque<Pair<Instant, Runnable>> taskQueue = new ArrayListDeque<>();
 
     public PlayerLoginLogoutNotifier() {
         super(BkMeteorAddon.CATEGORY, "player-login-logout-notifier", "Notifies you when a player logs in or out.");
@@ -140,6 +167,12 @@ public class PlayerLoginLogoutNotifier extends Module {
                 ChatUtils.sendMsg(messageQueue.removeFirst());
             }
         }
+        while (!taskQueue.isEmpty()) {
+            if (Instant.now().isAfter(taskQueue.getFirst().getLeft().plusMillis(joinDataDelay.get()))) {
+                break;
+            }
+            taskQueue.removeFirst().getRight().run();
+        }
         if (Modules.get().isActive(MineplayRemoveOfflineRobloxPlayers.class) && Modules.get().get(MineplayRemoveOfflineRobloxPlayers.class).hidePlayerLoginLogoutMessages.get()) {
             List<String> prevPlayers = onlineRobloxPlayers;
             onlineRobloxPlayers = new ArrayList<>();
@@ -169,6 +202,9 @@ public class PlayerLoginLogoutNotifier extends Module {
                 }
                 PlayerListEntry toRemove = mc.getNetworkHandler().getPlayerListEntry(player);
                 if (toRemove == null) continue;
+                if (ignoreSelf.get() && toRemove.getProfile().getId().equals(mc.player.getUuid())) continue;
+                if (MineplayUtils.isOnMineplay() && MineplayUtils.isRobloxPlayer(toRemove) && mineplayPlatformFilter.get() == MineplayPlatformType.MINECRAFT) continue;
+                if (MineplayUtils.isOnMineplay() && !MineplayUtils.isRobloxPlayer(toRemove) && mineplayPlatformFilter.get() == MineplayPlatformType.ROBLOX) continue;
                 if (!onlineRobloxPlayers.contains(player)) {
                     doCreateLeaveNotification(toRemove);
                 }
@@ -177,20 +213,30 @@ public class PlayerLoginLogoutNotifier extends Module {
     }
 
     private void createJoinNotifications(PlayerListS2CPacket packet) {
-        for (PlayerListS2CPacket.Entry entry : packet.getPlayerAdditionEntries()) {
-            if (entry.profile() == null) continue;
-            if (MineplayUtils.isDisconnectedPlayer(entry) && Modules.get().isActive(MineplayRemoveOfflineRobloxPlayers.class) && Modules.get().get(MineplayRemoveOfflineRobloxPlayers.class).hidePlayerLoginLogoutMessages.get()) return;
-            if (listMode.get() == ListMode.Blacklist) {
-                if (blacklist.get().contains(entry.profile().getName())) {
-                    continue;
+        for (PlayerListS2CPacket.Entry packetEntry : packet.getPlayerAdditionEntries()) {
+            if (packetEntry.profile() == null) continue;
+            taskQueue.addLast(new Pair<>(Instant.now(), () -> {
+                PlayerListEntry entry = MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(packetEntry.profile().getId());
+                if (entry == null) return;
+                if (ignoreSelf.get() && entry.getProfile().getId().equals(mc.player.getUuid())) return;
+                if (MineplayUtils.isOnMineplay() && MineplayUtils.isRobloxPlayer(entry) && mineplayPlatformFilter.get() == MineplayPlatformType.MINECRAFT)
+                    return;
+                if (MineplayUtils.isOnMineplay() && !MineplayUtils.isRobloxPlayer(entry) && mineplayPlatformFilter.get() == MineplayPlatformType.ROBLOX)
+                    return;
+                if (MineplayUtils.isDisconnectedPlayer(entry) && Modules.get().isActive(MineplayRemoveOfflineRobloxPlayers.class) && Modules.get().get(MineplayRemoveOfflineRobloxPlayers.class).hidePlayerLoginLogoutMessages.get())
+                    return;
+                if (listMode.get() == ListMode.Blacklist) {
+                    if (blacklist.get().contains(entry.getProfile().getName())) {
+                        return;
+                    }
+                } else {
+                    if (!whitelist.get().contains(entry.getProfile().getName())) {
+                        return;
+                    }
                 }
-            } else {
-                if (!whitelist.get().contains(entry.profile().getName())) {
-                    continue;
-                }
-            }
 
-            doCreateJoinNotification(entry);
+                doCreateJoinNotification(entry);
+            }));
         }
     }
 
@@ -200,6 +246,9 @@ public class PlayerLoginLogoutNotifier extends Module {
         for (UUID id : packet.profileIds()) {
             PlayerListEntry toRemove = mc.getNetworkHandler().getPlayerListEntry(id);
             if (toRemove == null) continue;
+            if (ignoreSelf.get() && toRemove.getProfile().getId().equals(mc.player.getUuid())) continue;
+            if (MineplayUtils.isOnMineplay() && MineplayUtils.isRobloxPlayer(toRemove) && mineplayPlatformFilter.get() == MineplayPlatformType.MINECRAFT) continue;
+            if (MineplayUtils.isOnMineplay() && !MineplayUtils.isRobloxPlayer(toRemove) && mineplayPlatformFilter.get() == MineplayPlatformType.ROBLOX) continue;
             if (MineplayUtils.isDisconnectedPlayer(toRemove) && Modules.get().isActive(MineplayRemoveOfflineRobloxPlayers.class) && Modules.get().get(MineplayRemoveOfflineRobloxPlayers.class).hidePlayerLoginLogoutMessages.get()) return;
             if (listMode.get() == ListMode.Blacklist) {
                 if (blacklist.get().contains(toRemove.getProfile().getName())) {
@@ -215,15 +264,15 @@ public class PlayerLoginLogoutNotifier extends Module {
         }
     }
 
-    private void doCreateJoinNotification(PlayerListS2CPacket.Entry entry) {
+    private void doCreateJoinNotification(PlayerListEntry entry) {
         if (customMineplayNotifications.get() && MineplayUtils.isOnMineplay()) {
             if (MineplayUtils.isRobloxPlayer(entry)) {
                 messageQueue.addLast(Text.literal(
                     Formatting.GRAY + "["
                         + Formatting.GREEN + "+"
                         + Formatting.GRAY + "] ").append(
-                    Text.literal(entry.profile().getName()).setStyle(Style.EMPTY.withColor(0xFF999B))).append(
-                    Text.literal(Formatting.GRAY + " joined the server on ")).append(
+                    Text.literal(entry.getProfile().getName()).setStyle(Style.EMPTY.withColor(0xFF999B))).append(
+                    Text.literal(Formatting.RESET + " joined the server on ")).append(
                     Text.literal("Roblox").setStyle(Style.EMPTY.withColor(0xFF999B)))
                 );
             } else {
@@ -231,8 +280,8 @@ public class PlayerLoginLogoutNotifier extends Module {
                     Formatting.GRAY + "["
                         + Formatting.GREEN + "+"
                         + Formatting.GRAY + "] "
-                        + Formatting.GREEN + entry.profile().getName()
-                        + Formatting.GRAY + " joined the server on "
+                        + Formatting.GREEN + entry.getProfile().getName()
+                        + Formatting.RESET + " joined the server on "
                         + Formatting.GREEN + "Minecraft"
                 ));
             }
@@ -241,12 +290,12 @@ public class PlayerLoginLogoutNotifier extends Module {
                 Formatting.GRAY + "["
                     + Formatting.GREEN + "+"
                     + Formatting.GRAY + "] "
-                    + entry.profile().getName()
+                    + entry.getProfile().getName()
             ));
         } else {
             messageQueue.addLast(Text.literal(
                 Formatting.WHITE
-                    + entry.profile().getName()
+                    + entry.getProfile().getName()
                     + Formatting.GRAY + " joined."
             ));
         }
@@ -260,7 +309,7 @@ public class PlayerLoginLogoutNotifier extends Module {
                         + Formatting.RED + "-"
                         + Formatting.GRAY + "] ").append(
                         Text.literal(entry.getProfile().getName()).setStyle(Style.EMPTY.withColor(0xFF999B))).append(
-                        Text.literal(Formatting.GRAY + " left the server on ")).append(
+                        Text.literal(Formatting.RESET + " left the server on ")).append(
                         Text.literal("Roblox").setStyle(Style.EMPTY.withColor(0xFF999B)))
                 );
             } else {
@@ -269,7 +318,7 @@ public class PlayerLoginLogoutNotifier extends Module {
                         + Formatting.RED + "-"
                         + Formatting.GRAY + "] "
                         + Formatting.GREEN + entry.getProfile().getName()
-                        + Formatting.GRAY + " left the server on "
+                        + Formatting.RESET + " left the server on "
                         + Formatting.GREEN + "Minecraft"
                 ));
             }
@@ -296,5 +345,11 @@ public class PlayerLoginLogoutNotifier extends Module {
     public enum ListMode {
         Whitelist,
         Blacklist
+    }
+
+    public enum MineplayPlatformType {
+        BOTH,
+        ROBLOX,
+        MINECRAFT
     }
 }

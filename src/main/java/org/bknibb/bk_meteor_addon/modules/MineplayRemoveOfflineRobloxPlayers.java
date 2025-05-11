@@ -2,6 +2,7 @@ package org.bknibb.bk_meteor_addon.modules;
 
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.BoolSetting;
+import meteordevelopment.meteorclient.settings.EnumSetting;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -46,8 +47,6 @@ public class MineplayRemoveOfflineRobloxPlayers extends Module {
             .build()
     );
 
-    private List<String> onlineRobloxPlayers = new ArrayList<>();
-
     public MineplayRemoveOfflineRobloxPlayers() {
         super(BkMeteorAddon.CATEGORY, "remove-offline-roblox-players", "Removes offline roblox players (for mineplay).");
     }
@@ -58,11 +57,5 @@ public class MineplayRemoveOfflineRobloxPlayers extends Module {
             info("This module is only designed for mineplay (mc.mineplay.nl).");
             return;
         }
-    }
-
-    @EventHandler
-    private void onTick(TickEvent.Post event) {
-
-
     }
 }

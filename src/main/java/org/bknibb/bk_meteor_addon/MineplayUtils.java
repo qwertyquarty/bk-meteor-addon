@@ -20,12 +20,13 @@ public class MineplayUtils {
         }
         return entry.getDisplayName().getStyle().getColor().getRgb() == 0xFF999B;
     }
-    public static boolean isRobloxPlayer(PlayerListS2CPacket.Entry entry) {
-        if (entry == null || entry.displayName() == null || entry.displayName().getStyle().getColor() == null) {
-            return false;
-        }
-        return entry.displayName().getStyle().getColor().getRgb() == 0xFF999B;
-    }
+//    using PlayerListS2CPacket.Entry is unsafe as it has not always got new/correct data
+//    public static boolean isRobloxPlayer(PlayerListS2CPacket.Entry entry) {
+//        if (entry == null || entry.displayName() == null || entry.displayName().getStyle().getColor() == null) {
+//            return false;
+//        }
+//        return entry.displayName().getStyle().getColor().getRgb() == 0xFF999B;
+//    }
     public static boolean isDisconnectedPlayer(PlayerEntity player) {
         MinecraftClient client = MinecraftClient.getInstance();
         PlayerListEntry entry = client.getNetworkHandler().getPlayerListEntry(player.getUuid());
@@ -48,10 +49,11 @@ public class MineplayUtils {
         if (!isRobloxPlayer(entry)) return false;
         return entry.getLatency() == 0;
     }
-    public static boolean isDisconnectedPlayer(PlayerListS2CPacket.Entry entry) {
-        if (!isRobloxPlayer(entry)) return false;
-        return entry.latency() == 0;
-    }
+//    using PlayerListS2CPacket.Entry is unsafe as it has not always got new/correct data
+//    public static boolean isDisconnectedPlayer(PlayerListS2CPacket.Entry entry) {
+//        if (!isRobloxPlayer(entry)) return false;
+//        return entry.latency() == 0;
+//    }
     public static boolean isOnMineplay() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.getCurrentServerEntry() == null) {
