@@ -85,7 +85,7 @@ jobs:
 #          title: Dev Build
 #          files: |
 #            ./build/libs/*.jar
-      - name: Release
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: build
