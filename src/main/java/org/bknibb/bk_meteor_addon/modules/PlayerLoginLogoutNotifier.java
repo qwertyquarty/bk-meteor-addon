@@ -66,6 +66,7 @@ public class PlayerLoginLogoutNotifier extends Module {
     );
 
     private final Setting<List<String>> blacklist = sgWhitelist.add(new StringListSetting.Builder()
+        .name("blacklist")
         .description("The players you don't want to see.")
         .visible(() -> listMode.get() == ListMode.Blacklist)
         .build()
