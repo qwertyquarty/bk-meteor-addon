@@ -11,4 +11,4 @@ This meteor addon adds a few useful commands and modules, with some features for
  - `PlayerEsp`: Esp for specific players.
  - `PlayerTracers`: Tracers for specific players.
  - `PlayerLoginLogoutNotifier`: Notifies you when a player logs in or out.
- - `MineplayRemoveOfflineRobloxPlayers`: Removes offline roblox players from the player list (for mineplay).
+ - `MineplayRemoveOfflineRobloxPlayers`: Removes offline roblox players (for mineplay).
