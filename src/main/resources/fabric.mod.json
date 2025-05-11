@@ -9,6 +9,7 @@
   "contact": {
     "repo": "https://github.com/Bknibb/bk-meteor-addon"
   },
+  "license": "GPL-3.0",
   "environment": "client",
   "entrypoints": {
     "meteor": [
