@@ -63,22 +63,23 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
-      - name: Release dev
-        if: needs.detect.outputs.is_release == 'false'
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: '${{ secrets.GITHUB_TOKEN }}'
-          automatic_release_tag: snapshot
-          prerelease: true
-          title: Dev Build
-          files: |
-            ./build/libs/*.jar
+#      - name: Release dev
+#        if: needs.detect.outputs.is_release == 'false'
+#        uses: marvinpinto/action-automatic-releases@latest
+#        with:
+#          repo_token: '${{ secrets.GITHUB_TOKEN }}'
+#          automatic_release_tag: snapshot
+#          prerelease: true
+#          title: Dev Build
+#          files: |
+#            ./build/libs/*.jar
       - name: Release
         if: needs.detect.outputs.is_release == 'true'
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: '${{ secrets.GITHUB_TOKEN }}'
           automatic_release_tag: ${{ needs.detect.outputs.version }}
+          prerelease: false
           title: Release ${{ needs.detect.outputs.version }}
           files: |
             ./build/libs/*.jar
