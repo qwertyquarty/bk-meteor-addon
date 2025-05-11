@@ -43,6 +43,7 @@ jobs:
           fi
   build:
     runs-on: ubuntu-latest
+    needs: detect
 
     steps:
       - name: Checkout Repository
