@@ -14,14 +14,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Get commit message
-        id: get_message
-        run: echo "msg=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
-
       - name: Determine if commit is a release
         id: extract_version
         run: |
-          msg="${{ steps.get_message.outputs.msg }}"
+          msg="${{ github.event.head_commit.message }}"
           if [[ "$msg" =~ release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             echo "is_release=true" >> $GITHUB_OUTPUT
             echo "version=v${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
