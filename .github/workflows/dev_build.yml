@@ -30,7 +30,12 @@ jobs:
           fi
 
           # Always output description
-          echo "description=$(echo "$msg" | tail -n +2 | tr '\n' ' ' | sed 's/ *$//')" >> $GITHUB_OUTPUT
+          description="$(echo "$msg" | tail -n +2)"
+          {
+            echo "description<<EOF"
+            echo "$description"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
       - name: Validate version in gradle.properties
         if: steps.extract_version.outputs.is_release == 'true'
         run: |
