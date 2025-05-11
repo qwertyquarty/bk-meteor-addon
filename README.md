@@ -12,3 +12,4 @@ This meteor addon adds a few useful commands and modules, with some features for
  - `PlayerTracers`: Tracers for specific players.
  - `PlayerLoginLogoutNotifier`: Notifies you when a player logs in or out.
  - `MineplayRemoveOfflineRobloxPlayers`: Removes offline roblox players (for mineplay).
+ - `MineplayBetterBreak`: Improves block breaking by making it creative-like (for mineplay).

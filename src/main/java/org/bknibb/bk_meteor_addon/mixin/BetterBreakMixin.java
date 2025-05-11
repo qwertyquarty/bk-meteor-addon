@@ -2,7 +2,7 @@ package org.bknibb.bk_meteor_addon.mixin;
 
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.bknibb.bk_meteor_addon.MineplayUtils;
-import org.bknibb.bk_meteor_addon.modules.BetterBreak;
+import org.bknibb.bk_meteor_addon.modules.MineplayBetterBreak;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,7 +20,7 @@ import static meteordevelopment.meteorclient.MeteorClient.mc;
 public class BetterBreakMixin {
     @Inject(method = "attackBlock(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)Z", at = @At("HEAD"), cancellable = true)
     private void onAttackBlock(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
-        if (!Modules.get().isActive(BetterBreak.class)) return;
+        if (!Modules.get().isActive(MineplayBetterBreak.class)) return;
         if (!MineplayUtils.isOnMineplay()) return;
         if (pos.getY() < 0) return;
 
