@@ -6,6 +6,7 @@ import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.commands.Commands;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Modules;
+import net.fabricmc.loader.api.FabricLoader;
 import org.bknibb.bk_meteor_addon.commands.LocatePlayerCommand;
 import org.bknibb.bk_meteor_addon.modules.MineplayRemoveOfflineRobloxPlayers;
 import org.bknibb.bk_meteor_addon.modules.PlayerEsp;
@@ -39,6 +40,18 @@ public class BkMeteorAddon extends MeteorAddon {
     @Override
     public String getPackage() {
         return "org.bknibb.bk_meteor_addon";
+    }
+
+    @Override
+    public String getCommit() {
+        String commit = FabricLoader
+                .getInstance()
+                .getModContainer("bk-meteor-addon")
+                .get().getMetadata()
+                .getCustomValue("github:sha")
+                .getAsString();
+        LOG.info("Bk Meteor Addon version: {}", commit);
+        return commit.isEmpty() ? null : commit.trim();
     }
 
     @Override
