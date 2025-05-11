@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "org.bknibb.bk_meteor_addon.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "LivingEntityRendererMixin",
+    "PlayerListHudMixin",
+    "NametagsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
