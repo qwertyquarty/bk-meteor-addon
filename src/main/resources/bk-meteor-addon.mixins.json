@@ -3,9 +3,11 @@
   "package": "org.bknibb.bk_meteor_addon.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "BetterBreakAccessor",
+    "BetterBreakMixin",
     "LivingEntityRendererMixin",
-    "PlayerListHudMixin",
-    "NametagsMixin"
+    "NametagsMixin",
+    "PlayerListHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1
