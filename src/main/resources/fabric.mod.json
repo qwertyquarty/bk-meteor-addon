@@ -1,27 +1,25 @@
 {
   "schemaVersion": 1,
-  "id": "addon-template",
+  "id": "bk-meteor-addon",
   "version": "${version}",
-  "name": "Addon Template",
-  "description": "An addon template for Meteor Client addons.",
+  "name": "Bk Meteor Addon",
   "authors": [
-    "seasnail"
+    "bknibb"
   ],
   "contact": {
-    "repo": "https://github.com/MeteorDevelopment/meteor-addon-template"
+    "repo": "https://github.com/Bknibb/bk-meteor-addon"
   },
-  "icon": "assets/template/icon.png",
   "environment": "client",
   "entrypoints": {
     "meteor": [
-      "com.example.addon.AddonTemplate"
+      "org.bknibb.bk_meteor_addon.BkMeteorAddon"
     ]
   },
   "mixins": [
-    "addon-template.mixins.json"
+    "bk-meteor-addon.mixins.json"
   ],
   "custom": {
-    "meteor-client:color": "225,25,25"
+    "meteor-client:color": "25,255,255"
   },
   "depends": {
     "java": ">=21",

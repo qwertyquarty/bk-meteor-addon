@@ -1,7 +1,50 @@
-name: Publish Development Build
+name: Publish Build
 on: push
 
 jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      is_release: ${{ steps.extract_version.outputs.is_release }}
+      version: ${{ steps.extract_version.outputs.version }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Get commit message
+        id: get_message
+        run: echo "msg=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
+
+      - name: Determine if commit is a release
+        id: extract_version
+        run: |
+          msg="${{ steps.get_message.outputs.msg }}"
+          if [[ "$msg" =~ release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "version=v${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+          else
+            echo "is_release=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Validate version in gradle.properties
+        if: steps.extract_version.outputs.is_release == 'true'
+        run: |
+          expected_version="${{ steps.extract_version.outputs.version }}" # e.g., v1.0.0
+          mod_version="v$(grep '^mod_version=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')"
+
+          echo "Expected version from commit: $expected_version"
+          echo "Version in gradle.properties: $mod_version"
+
+          if [ "$expected_version" != "$mod_version" ]; then
+            echo "❌ Version mismatch!"
+            echo "Expected: $expected_version"
+            echo "Found in gradle.properties: $mod_version"
+            exit 1
+          else
+            echo "✅ Version matches."
+          fi
   build:
     runs-on: ubuntu-latest
 
@@ -23,12 +66,22 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
-      - name: Release
+      - name: Release dev
+        if: needs.detect.outputs.is_release == 'false'
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: '${{ secrets.GITHUB_TOKEN }}'
           automatic_release_tag: snapshot
           prerelease: true
           title: Dev Build
+          files: |
+            ./build/libs/*.jar
+      - name: Release
+        if: needs.detect.outputs.is_release == 'true'
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: '${{ secrets.GITHUB_TOKEN }}'
+          automatic_release_tag: ${{ needs.detect.outputs.version }}
+          title: Release ${{ needs.detect.outputs.version }}
           files: |
             ./build/libs/*.jar

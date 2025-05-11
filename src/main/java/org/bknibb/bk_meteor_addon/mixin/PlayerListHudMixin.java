@@ -1,0 +1,25 @@
+package org.bknibb.bk_meteor_addon.mixin;
+
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.hud.PlayerListHud;
+import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.player.PlayerEntity;
+import org.bknibb.bk_meteor_addon.MineplayUtils;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Mixin(PlayerListHud.class)
+public class PlayerListHudMixin {
+    @ModifyReturnValue(method = "collectPlayerEntries", at = @At("RETURN"))
+    private List<PlayerListEntry> onCollectPlayerEntries(List<PlayerListEntry> original) {
+        if (!MineplayUtils.canHide()) return original;
+        List<PlayerListEntry> filtered = new ArrayList<>(original);
+        filtered.removeIf(MineplayUtils::hidePlayer);
+        return filtered;
+    }
+}
