@@ -79,6 +79,14 @@ public class PlayerEsp extends Module {
         .build()
     );
 
+    private final Setting<Boolean> includeFriends = sgWhitelist.add(new BoolSetting.Builder()
+        .name("include-friends")
+        .description("Include meteor friends in the whitelist.")
+        .defaultValue(true)
+        .visible(() -> listMode.get() == ListMode.Whitelist)
+        .build()
+    );
+
     private final Setting<List<String>> whitelist = sgWhitelist.add(new StringListSetting.Builder()
         .name("whitelist")
         .description("The players you want to see.")
@@ -243,7 +251,7 @@ public class PlayerEsp extends Module {
         if (listMode.get() == ListMode.Blacklist) {
             if (blacklist.get().contains(entity.getName().getString())) return true;
         } else {
-            if (!whitelist.get().contains(entity.getName().getString())) return true;
+            if (!(whitelist.get().contains(entity.getName().getString()) || (includeFriends.get() && Friends.get().get(entity.getName().getString()) != null))) return true;
         }
         return !EntityUtils.isInRenderDistance(entity);
     }

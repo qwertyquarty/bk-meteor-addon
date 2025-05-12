@@ -7,7 +7,8 @@
     "BetterBreakMixin",
     "LivingEntityRendererMixin",
     "NametagsMixin",
-    "PlayerListHudMixin"
+    "PlayerListHudMixin",
+    "EntityRenderDispatcherMixin"
   ],
   "injectors": {
     "defaultRequire": 1

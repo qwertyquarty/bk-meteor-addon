@@ -5,6 +5,7 @@ import meteordevelopment.meteorclient.events.game.GameLeftEvent;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.*;
+import meteordevelopment.meteorclient.systems.friends.Friends;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
@@ -98,6 +99,14 @@ public class PlayerLoginLogoutNotifier extends Module {
         .build()
     );
 
+    private final Setting<Boolean> includeFriends = sgWhitelist.add(new BoolSetting.Builder()
+        .name("include-friends")
+        .description("Include meteor friends in the whitelist.")
+        .defaultValue(true)
+        .visible(() -> listMode.get() == ListMode.Whitelist)
+        .build()
+    );
+
     private final Setting<List<String>> whitelist = sgWhitelist.add(new StringListSetting.Builder()
         .name("whitelist")
         .description("The players you want to see.")
@@ -182,7 +191,7 @@ public class PlayerLoginLogoutNotifier extends Module {
                         continue;
                     }
                 } else {
-                    if (!whitelist.get().contains(entry.getProfile().getName())) {
+                    if (!(whitelist.get().contains(entry.getProfile().getName()) || (includeFriends.get() && Friends.get().get(entry.getProfile().getName()) != null))) {
                         continue;
                     }
                 }
@@ -196,13 +205,12 @@ public class PlayerLoginLogoutNotifier extends Module {
                         continue;
                     }
                 } else {
-                    if (!whitelist.get().contains(player)) {
+                    if (!(whitelist.get().contains(player) || (includeFriends.get() && Friends.get().get(player) != null))) {
                         continue;
                     }
                 }
                 PlayerListEntry toRemove = mc.getNetworkHandler().getPlayerListEntry(player);
                 if (toRemove == null) continue;
-                if (ignoreSelf.get() && toRemove.getProfile().getId().equals(mc.player.getUuid())) continue;
                 if (MineplayUtils.isOnMineplay() && MineplayUtils.isRobloxPlayer(toRemove) && mineplayPlatformFilter.get() == MineplayPlatformType.MINECRAFT) continue;
                 if (MineplayUtils.isOnMineplay() && !MineplayUtils.isRobloxPlayer(toRemove) && mineplayPlatformFilter.get() == MineplayPlatformType.ROBLOX) continue;
                 if (!onlineRobloxPlayers.contains(player)) {
@@ -230,7 +238,7 @@ public class PlayerLoginLogoutNotifier extends Module {
                         return;
                     }
                 } else {
-                    if (!whitelist.get().contains(entry.getProfile().getName())) {
+                    if (!(whitelist.get().contains(entry.getProfile().getName()) || (includeFriends.get() && Friends.get().get(entry.getProfile().getName()) != null))) {
                         return;
                     }
                 }
@@ -255,7 +263,7 @@ public class PlayerLoginLogoutNotifier extends Module {
                     continue;
                 }
             } else {
-                if (!whitelist.get().contains(toRemove.getProfile().getName())) {
+                if (!(whitelist.get().contains(toRemove.getProfile().getName()) || (includeFriends.get() && Friends.get().get(toRemove.getProfile().getName()) != null))) {
                     continue;
                 }
             }

@@ -26,6 +26,13 @@ public class MineplayRemoveOfflineRobloxPlayers extends Module {
             .build()
     );
 
+    public final Setting<Boolean> hidePlayerShadow = sgGeneral.add(new BoolSetting.Builder()
+        .name("hide-player-shadow")
+        .description("Hide Player Shadow.")
+        .defaultValue(true)
+        .build()
+    );
+
     public final Setting<Boolean> hidePlayerListEntry = sgGeneral.add(new BoolSetting.Builder()
             .name("hide-player-list-entry")
             .description("Hide Player List Entry.")

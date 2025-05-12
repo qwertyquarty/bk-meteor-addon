@@ -25,6 +25,7 @@ public class BkMeteorAddon extends MeteorAddon {
         Modules.get().add(new PlayerLoginLogoutNotifier());
         Modules.get().add(new MineplayRemoveOfflineRobloxPlayers());
         Modules.get().add(new MineplayBetterBreak());
+        Modules.get().add(new NetworkLoginLogoutNotifier());
 
         // Commands
         Commands.add(new LocatePlayerCommand());

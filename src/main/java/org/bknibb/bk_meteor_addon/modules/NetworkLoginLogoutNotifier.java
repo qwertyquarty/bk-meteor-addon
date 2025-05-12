@@ -1,0 +1,211 @@
+package org.bknibb.bk_meteor_addon.modules;
+
+import com.mojang.brigadier.suggestion.Suggestion;
+import com.mojang.brigadier.suggestion.Suggestions;
+import meteordevelopment.meteorclient.events.game.GameLeftEvent;
+import meteordevelopment.meteorclient.events.packets.PacketEvent;
+import meteordevelopment.meteorclient.events.world.TickEvent;
+import meteordevelopment.meteorclient.settings.*;
+import meteordevelopment.meteorclient.systems.friends.Friends;
+import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.utils.player.ChatUtils;
+import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.packet.c2s.play.RequestCommandCompletionsC2SPacket;
+import net.minecraft.network.packet.s2c.play.CommandSuggestionsS2CPacket;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import org.bknibb.bk_meteor_addon.BkMeteorAddon;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class NetworkLoginLogoutNotifier extends Module {
+    private final SettingGroup sgGeneral = settings.getDefaultGroup();
+    private final SettingGroup sgWhitelist = settings.createGroup("Whitelist");
+
+    private final Setting<Integer> scanInterval = sgGeneral.add(new IntSetting.Builder()
+        .name("scan-interval")
+        .description("How long to wait in ticks between checking player completions.")
+        .range(20, 200)
+        .sliderRange(20, 200)
+        .defaultValue(100)
+        .build()
+    );
+
+    private final Setting<Boolean> simpleNotifications = sgGeneral.add(new BoolSetting.Builder()
+        .name("simple-notifications")
+        .description("Display join/leave notifications without a prefix, to reduce chat clutter.")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Boolean> ignoreSelf = sgGeneral.add(new BoolSetting.Builder()
+        .name("ignore-self")
+        .description("Ignores any join/leave messages from yourself (usually caused by vanish).")
+        .defaultValue(true)
+        .build()
+    );
+
+//    will add if requested
+//    private final Setting<Boolean> ignoreInServer = sgGeneral.add(new BoolSetting.Builder()
+//        .name("ignore-in-server")
+//        .description("Ignores any join/leave messages from any players in your current server.")
+//        .defaultValue(true)
+//        .build()
+//    );
+
+    private final Setting<ListMode> listMode = sgWhitelist.add(new EnumSetting.Builder<ListMode>()
+        .name("list-mode")
+        .description("Selection mode.")
+        .defaultValue(ListMode.Whitelist)
+        .build()
+    );
+
+    private final Setting<List<String>> blacklist = sgWhitelist.add(new StringListSetting.Builder()
+        .name("blacklist")
+        .description("The players you don't want to see.")
+        .visible(() -> listMode.get() == ListMode.Blacklist)
+        .build()
+    );
+
+    private final Setting<Boolean> includeFriends = sgWhitelist.add(new BoolSetting.Builder()
+        .name("include-friends")
+        .description("Include meteor friends in the whitelist.")
+        .defaultValue(true)
+        .visible(() -> listMode.get() == ListMode.Whitelist)
+        .build()
+    );
+
+    private final Setting<List<String>> whitelist = sgWhitelist.add(new StringListSetting.Builder()
+        .name("whitelist")
+        .description("The players you want to see.")
+        .visible(() -> listMode.get() == ListMode.Whitelist)
+        .build()
+    );
+
+    private int timer;
+    private static final Random RANDOM = new Random();
+    private Integer waitingPacket = null;
+    private boolean firstRefresh = true;
+    private List<String> onlinePlayers = new ArrayList<>();
+
+    public NetworkLoginLogoutNotifier() {
+        super(BkMeteorAddon.CATEGORY, "network-login-logout-notifier", "Notifies you when a player logs in or out of the network (for mineplay, also may work on other server networks).");
+    }
+
+    @EventHandler
+    private void onTick(TickEvent.Post event) {
+        if (waitingPacket != null) return;
+        if (mc.isInSingleplayer()) return;
+        if (mc.getCurrentServerEntry() == null) return;
+        if (mc.getCurrentServerEntry().isLocal()) return;
+        timer++;
+        if (timer > scanInterval.get()) {
+            timer = 0;
+            waitingPacket = RANDOM.nextInt(200);
+            mc.getNetworkHandler().sendPacket(new RequestCommandCompletionsC2SPacket(waitingPacket, "/msg "));
+        }
+    }
+
+    @EventHandler
+    private void onGameLeave(GameLeftEvent event) {
+        waitingPacket = null;
+        onlinePlayers.clear();
+        firstRefresh = true;
+    }
+
+    @EventHandler
+    private void onReceivePacket(PacketEvent.Receive event) {
+        if (waitingPacket == null) return;
+        if (event.packet instanceof CommandSuggestionsS2CPacket packet) {
+            if (packet.id() != waitingPacket) return;
+            waitingPacket = null;
+            Suggestions suggestions = packet.getSuggestions();
+            if (suggestions.isEmpty()) return;
+            List<String> prevOnlinePlayers = onlinePlayers;
+            onlinePlayers = new ArrayList<>();
+            for (Suggestion suggestion : suggestions.getList()) {
+                String name = suggestion.getText();
+                if (ignoreSelf.get() && name.equals(mc.player.getName())) continue;
+                //if (ignoreInServer.gte() && MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(name) != null) return;
+                if (listMode.get() == ListMode.Blacklist) {
+                    if (blacklist.get().contains(name)) {
+                        continue;
+                    }
+                } else {
+                    if (!(whitelist.get().contains(name) || (includeFriends.get() && Friends.get().get(name) != null))) {
+                        continue;
+                    }
+                }
+                onlinePlayers.add(name);
+                if (!prevOnlinePlayers.contains(name) && !firstRefresh) {
+                    showJoinNotification(name);
+                }
+            }
+            firstRefresh = false;
+            for (String name : prevOnlinePlayers) {
+                if (ignoreSelf.get() && name.equals(mc.player.getName())) continue;
+                //if (ignoreInServer.gte() && MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(name) != null) return;
+                if (listMode.get() == ListMode.Blacklist) {
+                    if (blacklist.get().contains(name)) {
+                        continue;
+                    }
+                } else {
+                    if (!(whitelist.get().contains(name) || (includeFriends.get() && Friends.get().get(name) != null))) {
+                        continue;
+                    }
+                }
+                if (!onlinePlayers.contains(name)) {
+                    showLeaveNotification(name);
+                }
+            }
+        }
+    }
+
+    private void showJoinNotification(String name) {
+        if (simpleNotifications.get()) {
+            mc.player.sendMessage(Text.literal(
+                Formatting.GRAY + "["
+                    + Formatting.LIGHT_PURPLE + "Network"
+                    + Formatting.GRAY + "] "
+                    + Formatting.GRAY + "["
+                    + Formatting.GREEN + "+"
+                    + Formatting.GRAY + "] "
+                    + Formatting.RESET + name
+            ), false);
+        } else {
+            ChatUtils.sendMsg(Text.literal(
+                    name
+                    + Formatting.GREEN + " joined "
+                    + Formatting.RESET + " the network."
+            ));
+        }
+    }
+
+    private void showLeaveNotification(String name) {
+        if (simpleNotifications.get()) {
+            mc.player.sendMessage(Text.literal(
+                Formatting.GRAY + "["
+                    + Formatting.LIGHT_PURPLE + "Network"
+                    + Formatting.GRAY + "] "
+                    + Formatting.GRAY + "["
+                    + Formatting.RED + "-"
+                    + Formatting.GRAY + "] "
+                    + Formatting.RESET + name
+            ), false);
+        } else {
+            ChatUtils.sendMsg(Text.literal(
+                name
+                    + Formatting.RED + " left "
+                    + Formatting.RESET + " the network."
+            ));
+        }
+    }
+
+    public enum ListMode {
+        Whitelist,
+        Blacklist
+    }
+}
