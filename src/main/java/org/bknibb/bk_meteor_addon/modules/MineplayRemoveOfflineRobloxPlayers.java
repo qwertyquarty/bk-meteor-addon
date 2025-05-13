@@ -57,12 +57,4 @@ public class MineplayRemoveOfflineRobloxPlayers extends Module {
     public MineplayRemoveOfflineRobloxPlayers() {
         super(BkMeteorAddon.CATEGORY, "remove-offline-roblox-players", "Removes offline roblox players (for mineplay).");
     }
-
-    @Override
-    public void onActivate() {
-        if (!MineplayUtils.isOnMineplay()) {
-            info("This module is only designed for mineplay (mc.mineplay.nl).");
-            return;
-        }
-    }
 }
