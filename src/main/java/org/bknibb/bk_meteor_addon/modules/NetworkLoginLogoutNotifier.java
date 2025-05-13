@@ -34,7 +34,7 @@ public class NetworkLoginLogoutNotifier extends Module {
         .build()
     );
 
-    private final Setting<Boolean> simpleNotifications = sgGeneral.add(new BoolSetting.Builder()
+    public final Setting<Boolean> simpleNotifications = sgGeneral.add(new BoolSetting.Builder()
         .name("simple-notifications")
         .description("Display join/leave notifications without a prefix, to reduce chat clutter.")
         .defaultValue(true)
@@ -89,7 +89,7 @@ public class NetworkLoginLogoutNotifier extends Module {
     private static final Random RANDOM = new Random();
     private Integer waitingPacket = null;
     private boolean firstRefresh = true;
-    private List<String> onlinePlayers = new ArrayList<>();
+    public List<String> onlinePlayers = new ArrayList<>();
 
     public NetworkLoginLogoutNotifier() {
         super(BkMeteorAddon.CATEGORY, "network-login-logout-notifier", "Notifies you when a player logs in or out of the network (for mineplay, also may work on other server networks).");

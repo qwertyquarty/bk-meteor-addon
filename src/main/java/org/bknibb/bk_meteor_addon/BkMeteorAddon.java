@@ -8,6 +8,7 @@ import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.fabricmc.loader.api.FabricLoader;
 import org.bknibb.bk_meteor_addon.commands.LocatePlayerCommand;
+import org.bknibb.bk_meteor_addon.commands.NetworkOnlineCommand;
 import org.bknibb.bk_meteor_addon.modules.*;
 import org.slf4j.Logger;
 
@@ -26,9 +27,11 @@ public class BkMeteorAddon extends MeteorAddon {
         Modules.get().add(new MineplayRemoveOfflineRobloxPlayers());
         Modules.get().add(new MineplayBetterBreak());
         Modules.get().add(new NetworkLoginLogoutNotifier());
+        Modules.get().add(new BadWordFinder());
 
         // Commands
         Commands.add(new LocatePlayerCommand());
+        Commands.add(new NetworkOnlineCommand());
     }
 
     @Override
