@@ -10,15 +10,24 @@ import net.fabricmc.loader.api.FabricLoader;
 import org.bknibb.bk_meteor_addon.commands.LocatePlayerCommand;
 import org.bknibb.bk_meteor_addon.commands.NetworkOnlineCommand;
 import org.bknibb.bk_meteor_addon.modules.*;
+import org.bknibb.bk_meteor_addon.update_system.UpdateSystem;
 import org.slf4j.Logger;
 
 public class BkMeteorAddon extends MeteorAddon {
     public static final Logger LOG = LogUtils.getLogger();
     public static final Category CATEGORY = new Category("BkMeteorAddon");
+    public static BkMeteorAddon INSTNACE;
 
     @Override
     public void onInitialize() {
+        INSTNACE = this;
         LOG.info("Initializing Bk Meteor Addon");
+
+        LOG.info(FabricLoader.getInstance().getModContainer("bk-meteor-addon").get().getOrigin().getPaths().getFirst().toString());
+
+        ConfigModifier.get();
+
+        //UpdateSystem.checkForUpdates(this);
 
         // Modules
         Modules.get().add(new PlayerEsp());
