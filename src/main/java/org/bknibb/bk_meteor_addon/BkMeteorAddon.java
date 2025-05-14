@@ -13,6 +13,10 @@ import org.bknibb.bk_meteor_addon.modules.*;
 import org.bknibb.bk_meteor_addon.update_system.UpdateSystem;
 import org.slf4j.Logger;
 
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 public class BkMeteorAddon extends MeteorAddon {
     public static final Logger LOG = LogUtils.getLogger();
     public static final Category CATEGORY = new Category("BkMeteorAddon");
@@ -23,7 +27,18 @@ public class BkMeteorAddon extends MeteorAddon {
         INSTNACE = this;
         LOG.info("Initializing Bk Meteor Addon");
 
-        LOG.info(FabricLoader.getInstance().getModContainer("bk-meteor-addon").get().getOrigin().getPaths().getFirst().toString());
+        Path modPath = FabricLoader.getInstance().getModContainer("bk-meteor-addon").get().getOrigin().getPaths().getFirst();
+        Path modDir = modPath.getParent();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(modDir, "bk-meteor-addon-*.jar")) {
+            for (Path path : stream) {
+                if (!path.equals(modPath)) {
+                    Files.deleteIfExists(path);
+                    LOG.info("Deleted old mod file: " + path);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error reading mod directory: " + e.getMessage());
+        }
 
         ConfigModifier.get();
 

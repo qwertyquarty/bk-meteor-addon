@@ -95,17 +95,24 @@ public class UpdateScreen extends WindowScreen {
                     } catch (IOException ignored) {
 
                     }
-                    if (!modPath.equals(target)) {
-                        try {
-                            Files.delete(modPath);
-                        } catch (IOException e) {
-                            close();
-                            UpdateSystem.LOG.warn("Failed to delete old mod file: " + e.getMessage());
-                            //MinecraftClient.getInstance().getToastManager().add(new MeteorToast(null, "Failed To Delete Old File", "Failed to delete old mod file: " + e.getMessage()));
-                            MinecraftClient.getInstance().setScreen(new UpdateFailedScreen(theme, addon, relaseResponse, "Failed to delete old mod file",  e.getMessage()));
-                            return;
-                        }
-                    }
+//                    if (!modPath.equals(target)) {
+//                        //try {
+//                            //Files.delete(modPath);
+//                            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//                                try {
+//                                    Files.delete(modPath);
+//                                } catch (IOException e) {
+//                                    UpdateSystem.LOG.warn("Failed to delete old mod file: " + e.getMessage());
+//                                }
+//                            }));
+////                        } catch (IOException e) {
+////                            close();
+////                            UpdateSystem.LOG.warn("Failed to delete old mod file: " + e.getMessage());
+////                            //MinecraftClient.getInstance().getToastManager().add(new MeteorToast(null, "Failed To Delete Old File", "Failed to delete old mod file: " + e.getMessage()));
+////                            MinecraftClient.getInstance().setScreen(new UpdateFailedScreen(theme, addon, relaseResponse, "Failed to delete old mod file",  e.getMessage()));
+////                            return;
+////                        }
+//                    }
                 }
                 default -> {
                     close();
