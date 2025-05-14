@@ -97,7 +97,7 @@ public class UpdateScreen extends WindowScreen {
                     }
                     if (!modPath.equals(target)) {
                         try {
-                            Files.delete(target);
+                            Files.delete(modPath);
                         } catch (IOException e) {
                             close();
                             UpdateSystem.LOG.warn("Failed to delete old mod file: " + e.getMessage());
