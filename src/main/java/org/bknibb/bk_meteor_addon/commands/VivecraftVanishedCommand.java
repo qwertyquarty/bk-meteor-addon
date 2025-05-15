@@ -15,6 +15,10 @@ public class VivecraftVanishedCommand extends Command {
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
         builder.executes(context -> {
             VivecraftVanishDetect module = Modules.get().get(VivecraftVanishDetect.class);
+            if (!module.isActive()) {
+                error("VivecraftVanishDetect is not active.");
+                return SINGLE_SUCCESS;
+            }
             for (String name : module.vanishedPlayers) {
                 module.showVanishedNotification(name);
             }

@@ -17,7 +17,12 @@ public class NetworkOnlineCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
         builder.executes(context -> {
-            for (String name : Modules.get().get(NetworkLoginLogoutNotifier.class).onlinePlayers) {
+            NetworkLoginLogoutNotifier module = Modules.get().get(NetworkLoginLogoutNotifier.class);
+            if (!module.isActive()) {
+                error("NetworkLoginLogoutNotifier is not active.");
+                return SINGLE_SUCCESS;
+            }
+            for (String name : module.onlinePlayers) {
                 showOnlineNotification(name);
             }
             return SINGLE_SUCCESS;
