@@ -22,6 +22,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.SignBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
+import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.resource.Resource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -31,6 +33,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import org.bknibb.bk_meteor_addon.BkMeteorAddon;
+import org.bknibb.bk_meteor_addon.MineplayUtils;
 
 import java.io.InputStream;
 import java.net.http.HttpResponse;
@@ -63,6 +66,14 @@ public class BadWordFinder extends Module {
         .description("Check for bad words in signs.")
         .defaultValue(true)
         .onChanged(state -> {if (state) refreshSigns();})
+        .build()
+    );
+
+    private final Setting<Boolean> breakSigns = sgGeneral.add(new BoolSetting.Builder()
+        .name("break-signs")
+        .description("Breaks the signs when found.")
+        .defaultValue(false)
+        .visible(checkSigns::get)
         .build()
     );
 
@@ -377,6 +388,11 @@ public class BadWordFinder extends Module {
         }
         if (hasBadWord) {
             info(Formatting.RESET + "Bad word " + Formatting.RED + badWord + Formatting.RESET + " found in sign at " + pos.toShortString());
+            if (breakSigns.get() && MineplayUtils.isOnMineplay()) {
+                mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(pos.getX(), pos.getY(), pos.getZ(), false, mc.player.horizontalCollision));
+                mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
+                mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), mc.player.getY(), mc.player.getZ(), false, mc.player.horizontalCollision));
+            }
             if (badSigns.containsKey(pos)) {
                 BadSign badSign = badSigns.get(pos);
                 if (back) {
