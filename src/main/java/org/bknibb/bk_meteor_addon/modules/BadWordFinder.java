@@ -71,7 +71,7 @@ public class BadWordFinder extends Module {
 
     private final Setting<Boolean> breakSigns = sgGeneral.add(new BoolSetting.Builder()
         .name("break-signs")
-        .description("Breaks the signs when found.")
+        .description("Breaks the signs when found (mineplay only).")
         .defaultValue(false)
         .visible(checkSigns::get)
         .build()
