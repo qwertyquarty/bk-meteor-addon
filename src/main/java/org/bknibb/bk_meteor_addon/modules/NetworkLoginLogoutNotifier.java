@@ -5,12 +5,17 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import meteordevelopment.meteorclient.events.game.GameLeftEvent;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
+import meteordevelopment.meteorclient.gui.GuiTheme;
+import meteordevelopment.meteorclient.gui.widgets.WWidget;
+import meteordevelopment.meteorclient.gui.widgets.containers.WHorizontalList;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.friends.Friends;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.utils.misc.NbtUtils;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.c2s.play.RequestCommandCompletionsC2SPacket;
 import net.minecraft.network.packet.s2c.play.CommandSuggestionsS2CPacket;
 import net.minecraft.text.Text;
@@ -43,7 +48,7 @@ public class NetworkLoginLogoutNotifier extends Module {
 
     private final Setting<Boolean> ignoreSelf = sgGeneral.add(new BoolSetting.Builder()
         .name("ignore-self")
-        .description("Ignores any join/leave messages from yourself (usually caused by vanish).")
+        .description("Ignores any join/leave messages from yourself.")
         .defaultValue(true)
         .build()
     );
@@ -95,6 +100,36 @@ public class NetworkLoginLogoutNotifier extends Module {
         super(BkMeteorAddon.CATEGORY, "network-login-logout-notifier", "Notifies you when a player logs in or out of the network (for mineplay, also may work on other server networks).");
     }
 
+    @Override
+    public WWidget getWidget(GuiTheme theme) {
+        WHorizontalList list = theme.horizontalList();
+        list.add(theme.button("Copy List Settings")).widget().action = () -> {;
+            NbtCompound tag = new NbtCompound();
+            tag.put("listMode", listMode.toTag());
+            tag.put("blacklist", blacklist.toTag());
+            tag.put("includeFriends", includeFriends.toTag());
+            tag.put("whitelist", whitelist.toTag());
+            NbtUtils.toClipboard(tag);
+        };
+        list.add(theme.button("Paste List Settings")).widget().action = () -> {
+            NbtCompound tag = NbtUtils.fromClipboard();
+            if (tag == null) return;
+            if (tag.contains("listMode")) {
+                listMode.fromTag(tag.getCompound("listMode"));
+            }
+            if (tag.contains("blacklist")) {
+                blacklist.fromTag(tag.getCompound("blacklist"));
+            }
+            if (tag.contains("includeFriends")) {
+                includeFriends.fromTag(tag.getCompound("includeFriends"));
+            }
+            if (tag.contains("whitelist")) {
+                whitelist.fromTag(tag.getCompound("whitelist"));
+            }
+        };
+        return list;
+    }
+
     @EventHandler
     private void onTick(TickEvent.Post event) {
         if (waitingPacket != null) return;
@@ -128,7 +163,7 @@ public class NetworkLoginLogoutNotifier extends Module {
             onlinePlayers = new ArrayList<>();
             for (Suggestion suggestion : suggestions.getList()) {
                 String name = suggestion.getText();
-                if (ignoreSelf.get() && name.equals(mc.player.getName())) continue;
+                if (ignoreSelf.get() && name.equals(mc.player.getName().getString())) continue;
                 //if (ignoreInServer.gte() && MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(name) != null) return;
                 if (listMode.get() == ListMode.Blacklist) {
                     if (blacklist.get().contains(name)) {
@@ -146,7 +181,7 @@ public class NetworkLoginLogoutNotifier extends Module {
             }
             firstRefresh = false;
             for (String name : prevOnlinePlayers) {
-                if (ignoreSelf.get() && name.equals(mc.player.getName())) continue;
+                if (ignoreSelf.get() && name.equals(mc.player.getName().getString())) continue;
                 //if (ignoreInServer.gte() && MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(name) != null) return;
                 if (listMode.get() == ListMode.Blacklist) {
                     if (blacklist.get().contains(name)) {

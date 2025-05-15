@@ -11,7 +11,7 @@ import org.bknibb.bk_meteor_addon.modules.NetworkLoginLogoutNotifier;
 
 public class NetworkOnlineCommand extends Command {
     public NetworkOnlineCommand() {
-        super("network-online", "Shows online players on the network, gets settings from NetworkLoginLogoutNotifier (for mineplay, also may work on other server networks).");
+        super("network-online", "Shows online players on the network, gets settings from and requires NetworkLoginLogoutNotifier (for mineplay, also may work on other server networks).");
     }
 
     @Override

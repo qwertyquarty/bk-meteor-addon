@@ -4,15 +4,20 @@ import meteordevelopment.meteorclient.events.game.GameJoinedEvent;
 import meteordevelopment.meteorclient.events.game.GameLeftEvent;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
+import meteordevelopment.meteorclient.gui.GuiTheme;
+import meteordevelopment.meteorclient.gui.widgets.WWidget;
+import meteordevelopment.meteorclient.gui.widgets.containers.WHorizontalList;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.friends.Friends;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.systems.modules.Modules;
+import meteordevelopment.meteorclient.utils.misc.NbtUtils;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket;
 import net.minecraft.text.Style;
@@ -125,8 +130,33 @@ public class PlayerLoginLogoutNotifier extends Module {
     }
 
     @Override
-    public void onActivate() {
-
+    public WWidget getWidget(GuiTheme theme) {
+        WHorizontalList list = theme.horizontalList();
+        list.add(theme.button("Copy List Settings")).widget().action = () -> {;
+            NbtCompound tag = new NbtCompound();
+            tag.put("listMode", listMode.toTag());
+            tag.put("blacklist", blacklist.toTag());
+            tag.put("includeFriends", includeFriends.toTag());
+            tag.put("whitelist", whitelist.toTag());
+            NbtUtils.toClipboard(tag);
+        };
+        list.add(theme.button("Paste List Settings")).widget().action = () -> {
+            NbtCompound tag = NbtUtils.fromClipboard();
+            if (tag == null) return;
+            if (tag.contains("listMode")) {
+                listMode.fromTag(tag.getCompound("listMode"));
+            }
+            if (tag.contains("blacklist")) {
+                blacklist.fromTag(tag.getCompound("blacklist"));
+            }
+            if (tag.contains("includeFriends")) {
+                includeFriends.fromTag(tag.getCompound("includeFriends"));
+            }
+            if (tag.contains("whitelist")) {
+                whitelist.fromTag(tag.getCompound("whitelist"));
+            }
+        };
+        return list;
     }
 
     @Override

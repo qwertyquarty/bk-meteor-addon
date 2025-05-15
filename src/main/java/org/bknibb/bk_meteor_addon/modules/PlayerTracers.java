@@ -2,6 +2,9 @@ package org.bknibb.bk_meteor_addon.modules;
 
 import meteordevelopment.meteorclient.events.render.Render2DEvent;
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
+import meteordevelopment.meteorclient.gui.GuiTheme;
+import meteordevelopment.meteorclient.gui.widgets.WWidget;
+import meteordevelopment.meteorclient.gui.widgets.containers.WHorizontalList;
 import meteordevelopment.meteorclient.renderer.Renderer2D;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.config.Config;
@@ -11,6 +14,7 @@ import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.render.Freecam;
 import meteordevelopment.meteorclient.utils.entity.EntityUtils;
 import meteordevelopment.meteorclient.utils.entity.Target;
+import meteordevelopment.meteorclient.utils.misc.NbtUtils;
 import meteordevelopment.meteorclient.utils.player.PlayerUtils;
 import meteordevelopment.meteorclient.utils.render.NametagUtils;
 import meteordevelopment.meteorclient.utils.render.RenderUtils;
@@ -19,6 +23,7 @@ import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.Vec2f;
 import org.bknibb.bk_meteor_addon.BkMeteorAddon;
 import org.joml.Vector2f;
@@ -173,6 +178,36 @@ public class PlayerTracers extends Module {
 
     public PlayerTracers() {
         super(BkMeteorAddon.CATEGORY, "player-tracers", "Tracers for specific players.");
+    }
+
+    @Override
+    public WWidget getWidget(GuiTheme theme) {
+        WHorizontalList list = theme.horizontalList();
+        list.add(theme.button("Copy List Settings")).widget().action = () -> {;
+            NbtCompound tag = new NbtCompound();
+            tag.put("listMode", listMode.toTag());
+            tag.put("blacklist", blacklist.toTag());
+            tag.put("includeFriends", includeFriends.toTag());
+            tag.put("whitelist", whitelist.toTag());
+            NbtUtils.toClipboard(tag);
+        };
+        list.add(theme.button("Paste List Settings")).widget().action = () -> {
+            NbtCompound tag = NbtUtils.fromClipboard();
+            if (tag == null) return;
+            if (tag.contains("listMode")) {
+                listMode.fromTag(tag.getCompound("listMode"));
+            }
+            if (tag.contains("blacklist")) {
+                blacklist.fromTag(tag.getCompound("blacklist"));
+            }
+            if (tag.contains("includeFriends")) {
+                includeFriends.fromTag(tag.getCompound("includeFriends"));
+            }
+            if (tag.contains("whitelist")) {
+                whitelist.fromTag(tag.getCompound("whitelist"));
+            }
+        };
+        return list;
     }
 
     private boolean shouldBeIgnored(Entity entity) {
