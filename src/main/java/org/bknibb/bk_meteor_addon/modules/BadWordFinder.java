@@ -24,6 +24,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.network.packet.c2s.play.UpdateSignC2SPacket;
 import net.minecraft.resource.Resource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -81,6 +82,14 @@ public class BadWordFinder extends Module {
     private final Setting<Boolean> breakSigns = sgGeneral.add(new BoolSetting.Builder()
         .name("break-signs")
         .description("Breaks the signs when found (mineplay only).")
+        .defaultValue(false)
+        .visible(checkSigns::get)
+        .build()
+    );
+
+    private final Setting<Boolean> eraseSigns = sgGeneral.add(new BoolSetting.Builder()
+        .name("erase-signs")
+        .description("Erases the signs when found (mineplay only).")
         .defaultValue(false)
         .visible(checkSigns::get)
         .build()
@@ -406,10 +415,14 @@ public class BadWordFinder extends Module {
         }
         if (hasBadWord) {
             info(Formatting.RESET + "Bad word " + Formatting.RED + badWord + Formatting.RESET + " found in sign at " + pos.toShortString());
-            if (breakSigns.get() && MineplayUtils.isOnMineplay()) {
-                mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(pos.getX(), pos.getY(), pos.getZ(), false, mc.player.horizontalCollision));
-                mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
-                mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), mc.player.getY(), mc.player.getZ(), false, mc.player.horizontalCollision));
+            if (MineplayUtils.isOnMineplay()) {
+                if (breakSigns.get()) {
+                    mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(pos.getX(), pos.getY(), pos.getZ(), false, mc.player.horizontalCollision));
+                    mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
+                    mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), mc.player.getY(), mc.player.getZ(), false, mc.player.horizontalCollision));
+                } else if (eraseSigns.get()) {
+                    mc.player.networkHandler.sendPacket(new UpdateSignC2SPacket(pos, true, "", "", "", ""));
+                }
             }
             if (badSigns.containsKey(pos)) {
                 BadSign badSign = badSigns.get(pos);
