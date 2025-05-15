@@ -152,18 +152,15 @@ public class VivecraftVanishDetect extends Module {
         if (event.packet instanceof GameMessageS2CPacket packet) {
             if (Objects.equals(packet.content().getString(), "There are currently no players with vivecraft installed.")) {
                 waitingPacket--;
-                BkMeteorAddon.LOG.info("NO INSTALLED");
                 vanishedPlayers.clear();
                 event.cancel();
                 return;
             } else if (packet.content().getString().startsWith("Players on Vivecraft: (")) {
                 waitingPacket--;
-                BkMeteorAddon.LOG.info("FIRST PACKET");
                 Pattern pattern = Pattern.compile("\\((\\d+)\\)");
                 Matcher matcher = pattern.matcher(packet.content().getString());
                 if (matcher.find()) {
                     int number = Integer.parseInt(matcher.group(1));
-                    BkMeteorAddon.LOG.info(String.valueOf(number));
                     waitingPacket = number;
                     tempVrPlayers.clear();
                     event.cancel();
@@ -172,14 +169,12 @@ public class VivecraftVanishDetect extends Module {
                 }
             } else if (packet.content().getString().startsWith("  - ")) {
                 waitingPacket--;
-                BkMeteorAddon.LOG.info("PLAYER PACKET");
                 Pattern pattern = Pattern.compile("-\\s+(\\w+)\\s+\\(");
                 Matcher matcher = pattern.matcher(packet.content().getString());
 
                 if (matcher.find()) {
                     {
                         String name = matcher.group(1);
-                        BkMeteorAddon.LOG.info(name);
                         tempVrPlayers.add(name);
                     }
                     event.cancel();
@@ -187,7 +182,6 @@ public class VivecraftVanishDetect extends Module {
                         List<String> prevVanishedPlayers = vanishedPlayers;
                         vanishedPlayers = new ArrayList<>();
                         for (String name : tempVrPlayers) {
-                            BkMeteorAddon.LOG.info("1 " + name);
                             if (ignoreSelf.get() && name.equals(mc.player.getName().getString())) continue;
                             if (listMode.get() == ListMode.Blacklist) {
                                 if (blacklist.get().contains(name)) {
@@ -198,12 +192,9 @@ public class VivecraftVanishDetect extends Module {
                                     continue;
                                 }
                             }
-                            BkMeteorAddon.LOG.info("2 " + name);
                             if (MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(name) != null) continue;
-                            BkMeteorAddon.LOG.info("3 " + name);
                             vanishedPlayers.add(name);
                             if (!prevVanishedPlayers.contains(name)) {
-                                BkMeteorAddon.LOG.info("4 " + name);
                                 showVanishedNotification(name);
                             }
                         }
