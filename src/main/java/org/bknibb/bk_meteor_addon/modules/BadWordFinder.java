@@ -57,13 +57,6 @@ public class BadWordFinder extends Module {
         .build()
     );
 
-    private final Setting<Boolean> threadedChecking = sgGeneral.add(new BoolSetting.Builder()
-        .name("threaded-checking")
-        .description("Runs checks in a separate thread (highly recommended).")
-        .defaultValue(true)
-        .build()
-    );
-
     private final Setting<Boolean> checkChatMessages = sgGeneral.add(new BoolSetting.Builder()
         .name("check-chat-messages")
         .description("Check for bad words in chat messages.")
@@ -89,7 +82,7 @@ public class BadWordFinder extends Module {
 
     private final Setting<Boolean> eraseSigns = sgGeneral.add(new BoolSetting.Builder()
         .name("erase-signs")
-        .description("Erases the signs when found (mineplay only).")
+        .description("Erases the signs when found (doesn't work with break signs) (mineplay only).")
         .defaultValue(false)
         .visible(checkSigns::get)
         .build()
@@ -164,19 +157,12 @@ public class BadWordFinder extends Module {
         if (!checkChatMessages.get()) return;
         Text message = event.getMessage();
         if (message.getString().startsWith("[Meteor]")) return;
-        if (threadedChecking.get()) {
-            EXECUTOR.submit(() -> {
-                String badWord = getBadWord(message.getString());
-                if (badWord != null) {
-                    messageQueue.addLast(Formatting.RESET + "Bad word " + Formatting.RED + badWord + Formatting.RESET + " found in message");
-                }
-            });
-        } else {
+        EXECUTOR.submit(() -> {
             String badWord = getBadWord(message.getString());
             if (badWord != null) {
                 messageQueue.addLast(Formatting.RESET + "Bad word " + Formatting.RED + badWord + Formatting.RESET + " found in message");
             }
-        }
+        });
     }
 
     @EventHandler
@@ -452,11 +438,7 @@ public class BadWordFinder extends Module {
 
     public void badWordCheck(Text[] texts, BlockPos pos, boolean back) {
         if (!isActive() || !checkSigns.get()) return;
-        if (threadedChecking.get()) {
-            EXECUTOR.submit(() -> doBadWordCheck(texts, pos, back));
-        } else {
-            doBadWordCheck(texts, pos, back);
-        }
+        EXECUTOR.submit(() -> doBadWordCheck(texts, pos, back));
     }
 
     public static void BadWordCheck(Text[] texts, BlockPos pos, boolean back) {
