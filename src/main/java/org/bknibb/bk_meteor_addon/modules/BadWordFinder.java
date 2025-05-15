@@ -40,6 +40,8 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,6 +53,13 @@ public class BadWordFinder extends Module {
         .name("bad-word-list")
         .description("Which bad word list to use.")
         .defaultValue(BadWordList.ModeratelyStrict)
+        .build()
+    );
+
+    private final Setting<Boolean> threadedChecking = sgGeneral.add(new BoolSetting.Builder()
+        .name("threaded-checking")
+        .description("Runs checks in a separate thread (highly recommended).")
+        .defaultValue(true)
         .build()
     );
 
@@ -146,9 +155,18 @@ public class BadWordFinder extends Module {
         if (!checkChatMessages.get()) return;
         Text message = event.getMessage();
         if (message.getString().startsWith("[Meteor]")) return;
-        String badWord = getBadWord(message.getString());
-        if (badWord != null) {
-            messageQueue.addLast(Formatting.RESET + "Bad word " + Formatting.RED + badWord + Formatting.RESET + " found in message");
+        if (threadedChecking.get()) {
+            EXECUTOR.submit(() -> {
+                String badWord = getBadWord(message.getString());
+                if (badWord != null) {
+                    messageQueue.addLast(Formatting.RESET + "Bad word " + Formatting.RED + badWord + Formatting.RESET + " found in message");
+                }
+            });
+        } else {
+            String badWord = getBadWord(message.getString());
+            if (badWord != null) {
+                messageQueue.addLast(Formatting.RESET + "Bad word " + Formatting.RED + badWord + Formatting.RESET + " found in message");
+            }
         }
     }
 
@@ -202,6 +220,7 @@ public class BadWordFinder extends Module {
     private List<String> strictBadWords;
     private List<String> moderatelyStrictBadWords;
     private List<String> lessStrictBadWords;
+    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
 //    @Override
 //    public void onActivate() {
@@ -375,8 +394,7 @@ public class BadWordFinder extends Module {
 
     private Map<BlockPos, BadSign> badSigns = new ConcurrentHashMap<>();
 
-    public void badWordCheck(Text[] texts, BlockPos pos, boolean back) {
-        if (!isActive() || !checkSigns.get()) return;
+    private void doBadWordCheck(Text[] texts, BlockPos pos, boolean back) {
         boolean hasBadWord = false;
         String badWord = null;
         for (Text text : texts) {
@@ -416,6 +434,15 @@ public class BadWordFinder extends Module {
                     badSigns.remove(pos);
                 }
             }
+        }
+    }
+
+    public void badWordCheck(Text[] texts, BlockPos pos, boolean back) {
+        if (!isActive() || !checkSigns.get()) return;
+        if (threadedChecking.get()) {
+            EXECUTOR.submit(() -> doBadWordCheck(texts, pos, back));
+        } else {
+            doBadWordCheck(texts, pos, back);
         }
     }
 
