@@ -165,7 +165,7 @@ public class BadWordFinder extends Module {
         Text message = event.getMessage();
         if (message.getString().startsWith("[Meteor]")) return;
         EXECUTOR.submit(() -> {
-            String badWord = getBadWord(message.getString());
+            String badWord = getBadWord(message.getString().replaceAll("§[0-9a-fk-or]", ""));
             if (badWord != null) {
                 messageQueue.addLast(Formatting.RESET + "Bad word " + Formatting.RED + badWord + Formatting.RESET + " found in message");
             }
@@ -413,7 +413,7 @@ public class BadWordFinder extends Module {
         boolean hasBadWord = false;
         String badWord = null;
         for (Text text : texts) {
-            badWord = getBadWord(text.getString());
+            badWord = getBadWord(text.getString().replaceAll("§[0-9a-fk-or]", ""));
             if (badWord != null) {
                 hasBadWord = true;
                 break;
