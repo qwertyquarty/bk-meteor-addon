@@ -37,7 +37,6 @@ import org.bknibb.bk_meteor_addon.BkMeteorAddon;
 import org.bknibb.bk_meteor_addon.MineplayUtils;
 
 import java.io.InputStream;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,6 +53,14 @@ public class BadWordFinder extends Module {
         .name("bad-word-list")
         .description("Which bad word list to use.")
         .defaultValue(BadWordList.ModeratelyStrict)
+        .onChanged(state -> refreshSigns())
+        .build()
+    );
+
+    private final Setting<Boolean> extraRegexChecks = sgGeneral.add(new BoolSetting.Builder()
+        .name("extra-regex-checks")
+        .description("Use extra regex checks to find more variants of bad words.")
+        .defaultValue(true)
         .build()
     );
 
@@ -271,6 +278,8 @@ public class BadWordFinder extends Module {
                     toggle();
                     return new ArrayList<>();
                 }
+                moderatelyStrictBadWords = null;
+                lessStrictBadWords = null;
             }
             return strictBadWords;
         } else if (badWordList.get() == BadWordList.ModeratelyStrict) {
@@ -291,6 +300,8 @@ public class BadWordFinder extends Module {
                     toggle();
                     return new ArrayList<>();
                 }
+                strictBadWords = null;
+                lessStrictBadWords = null;
             }
             return moderatelyStrictBadWords;
         } else if (badWordList.get() == BadWordList.LessStrict) {
@@ -311,10 +322,37 @@ public class BadWordFinder extends Module {
                     toggle();
                     return new ArrayList<>();
                 }
+                strictBadWords = null;
+                moderatelyStrictBadWords = null;
             }
             return lessStrictBadWords;
         }
         return new ArrayList<>();
+    }
+
+    private final String suffixPattern =
+        "(?:" +
+        "o" +                                // o
+        "|i[\\W_]*n[\\W_]*g" +               // ing
+        "|s" +                               // s
+        "|e[\\W_]*r[\\W_]*s" +               // ers
+        "|e[\\W_]*r" +                       // er
+        "|e[\\W_]*d" +                       // ed
+        ")?";
+
+    private boolean doCheckWord(String word, String message) {
+        String regex = "(?i)(?<=^|\\W)" + Pattern.quote(word) + "(?=\\W|$)";
+        if (extraRegexChecks.get()) {
+            String interleaved = String.join("[\\W_]*", Arrays.stream(word.split("")).map(Pattern::quote).toArray(String[]::new));
+            String currentSuffixPattern = suffixPattern;
+            if (word.endsWith("o") || word.endsWith("ing") || word.endsWith("s") || word.endsWith("ers") || word.endsWith("er") || word.endsWith("ed")) {
+                currentSuffixPattern = "";
+            }
+            regex = "(?i)(?<=^|\\W)" + interleaved + "[\\W_]*" + currentSuffixPattern + "(?=\\W|$)";
+        }
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(message);
+        return matcher.find();
     }
 
     public boolean containsBadWord(String message) {
@@ -322,29 +360,20 @@ public class BadWordFinder extends Module {
         if (listMode.get() == ListMode.Whitelist) {
             if (includeDefaultBadWordList.get()) {
                 for (String word : getBadWordsList()) {
-                    String regex = "(?i)(?<=^|\\W)" + Pattern.quote(word) + "(?=\\W|$)";
-                    Pattern pattern = Pattern.compile(regex);
-                    Matcher matcher = pattern.matcher(message);
-                    if (matcher.find()) {
+                    if (doCheckWord(word, message)) {
                         return true;
                     }
                 }
             }
             for (String word : whitelist.get()) {
-                String regex = "(?i)(?<=^|\\W)" + Pattern.quote(word) + "(?=\\W|$)";
-                Pattern pattern = Pattern.compile(regex);
-                Matcher matcher = pattern.matcher(message);
-                if (matcher.find()) {
+                if (doCheckWord(word, message)) {
                     return true;
                 }
             }
         } else {
             for (String word : getBadWordsList()) {
                 if (blacklist.get().contains(word)) continue;
-                String regex = "(?i)(?<=^|\\W)" + Pattern.quote(word) + "(?=\\W|$)";
-                Pattern pattern = Pattern.compile(regex);
-                Matcher matcher = pattern.matcher(message);
-                if (matcher.find()) {
+                if (doCheckWord(word, message)) {
                     return true;
                 }
             }
@@ -357,29 +386,20 @@ public class BadWordFinder extends Module {
         if (listMode.get() == ListMode.Whitelist) {
             if (includeDefaultBadWordList.get()) {
                 for (String word : getBadWordsList()) {
-                    String regex = "(?i)(?<=^|\\W)" + Pattern.quote(word) + "(?=\\W|$)";
-                    Pattern pattern = Pattern.compile(regex);
-                    Matcher matcher = pattern.matcher(message);
-                    if (matcher.find()) {
+                    if (doCheckWord(word, message)) {
                         return word;
                     }
                 }
             }
             for (String word : whitelist.get()) {
-                String regex = "(?i)(?<=^|\\W)" + Pattern.quote(word) + "(?=\\W|$)";
-                Pattern pattern = Pattern.compile(regex);
-                Matcher matcher = pattern.matcher(message);
-                if (matcher.find()) {
+                if (doCheckWord(word, message)) {
                     return word;
                 }
             }
         } else {
             for (String word : getBadWordsList()) {
                 if (blacklist.get().contains(word)) continue;
-                String regex = "(?i)(?<=^|\\W)" + Pattern.quote(word) + "(?=\\W|$)";
-                Pattern pattern = Pattern.compile(regex);
-                Matcher matcher = pattern.matcher(message);
-                if (matcher.find()) {
+                if (doCheckWord(word, message)) {
                     return word;
                 }
             }
