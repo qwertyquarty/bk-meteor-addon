@@ -7,9 +7,7 @@ import meteordevelopment.meteorclient.commands.Commands;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.fabricmc.loader.api.FabricLoader;
-import org.bknibb.bk_meteor_addon.commands.LocatePlayerCommand;
-import org.bknibb.bk_meteor_addon.commands.NetworkOnlineCommand;
-import org.bknibb.bk_meteor_addon.commands.VivecraftVanishedCommand;
+import org.bknibb.bk_meteor_addon.commands.*;
 import org.bknibb.bk_meteor_addon.modules.*;
 import org.bknibb.bk_meteor_addon.update_system.UpdateSystem;
 import org.slf4j.Logger;
@@ -59,6 +57,14 @@ public class BkMeteorAddon extends MeteorAddon {
         Commands.add(new LocatePlayerCommand());
         Commands.add(new NetworkOnlineCommand());
         Commands.add(new VivecraftVanishedCommand());
+        Commands.add(new MineplayBanPresetsCommand());
+        Commands.add(new MineplayKickPresetsCommand());
+        Commands.add(new MineplayMutePresetsCommand());
+        Commands.add(new MineplayRobloxBanPresetsCommand());
+        Commands.add(new MineplayRobloxWarnPresetsCommand());
+        Commands.add(new MineplayWarnPresetsCommand());
+        Commands.add(new MineplayIpCommand());
+        Commands.add(new MineplayBlocksCommand());
     }
 
     @Override
