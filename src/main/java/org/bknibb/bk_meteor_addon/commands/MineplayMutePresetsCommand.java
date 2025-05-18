@@ -15,17 +15,25 @@ public class MineplayMutePresetsCommand extends Command {
 
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
-        builder.then(argument("player", PlayerArgumentType.create()).then(argument("text", StringArgumentType.greedyString()).suggests((context, suggestionsBuilder) -> {
-            for (MutePreset preset : MutePreset.values()) {
-                suggestionsBuilder.suggest(preset.asString());
-            }
-            return suggestionsBuilder.buildFuture();
-        }).executes(context -> {
+        var argument = argument("player", PlayerArgumentType.create());
+        for (MutePreset preset : MutePreset.values()) {
+            argument = argument.then(literal(preset.name()).executes(context -> {
+                PlayerEntity player = PlayerArgumentType.get(context);
+                mc.getNetworkHandler().sendChatCommand("mute " + player.getName().getString() + " " + preset.asString());
+                return SINGLE_SUCCESS;
+            }).then(literal("-s").executes(context -> {
+                PlayerEntity player = PlayerArgumentType.get(context);
+                mc.getNetworkHandler().sendChatCommand("mute " + player.getName().getString() + " " + preset.asString() + " -s");
+                return SINGLE_SUCCESS;
+            })));
+        }
+        argument = argument.then(argument("text", StringArgumentType.greedyString()).executes(context -> {
             PlayerEntity player = PlayerArgumentType.get(context);
             String text = StringArgumentType.getString(context, "text");
-            mc.getNetworkHandler().sendChatCommand("mute " + player.getName().getString() + " " + text);
+            mc.getNetworkHandler().sendChatCommand("mute  " + player.getName().getString() + " " + text);
             return SINGLE_SUCCESS;
-        })));
+        }));
+        builder.then(argument);
     }
 
     private enum MutePreset implements StringIdentifiable {

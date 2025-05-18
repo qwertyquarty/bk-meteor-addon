@@ -15,17 +15,21 @@ public class MineplayRobloxBanPresetsCommand extends Command {
 
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
-        builder.then(argument("player", PlayerArgumentType.create()).then(argument("text", StringArgumentType.word()).suggests((context, suggestionsBuilder) -> {
-            for (RBanPreset preset : RBanPreset.values()) {
-                suggestionsBuilder.suggest(preset.asString());
-            }
-            return suggestionsBuilder.buildFuture();
-        }).executes(context -> {
+        var argument = argument("player", PlayerArgumentType.create());
+        for (RBanPreset preset : RBanPreset.values()) {
+            argument = argument.then(literal(preset.name()).executes(context -> {
+                PlayerEntity player = PlayerArgumentType.get(context);
+                mc.getNetworkHandler().sendChatCommand("rban " + player.getName().getString() + " " + preset.asString());
+                return SINGLE_SUCCESS;
+            }));
+        }
+        argument = argument.then(argument("text", StringArgumentType.greedyString()).executes(context -> {
             PlayerEntity player = PlayerArgumentType.get(context);
             String text = StringArgumentType.getString(context, "text");
             mc.getNetworkHandler().sendChatCommand("rban " + player.getName().getString() + " " + text);
             return SINGLE_SUCCESS;
-        })));
+        }));
+        builder.then(argument);
     }
 
     private enum RBanPreset implements StringIdentifiable {

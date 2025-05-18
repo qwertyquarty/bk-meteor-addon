@@ -15,12 +15,19 @@ public class MineplayWarnPresetsCommand extends Command {
 
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
-        builder.then(argument("player", PlayerArgumentType.create()).then(argument("text", StringArgumentType.greedyString()).suggests((context, suggestionsBuilder) -> {
-            for (WarnPreset preset : WarnPreset.values()) {
-                suggestionsBuilder.suggest(preset.asString());
-            }
-            return suggestionsBuilder.buildFuture();
-        }).executes(context -> {
+        var argument = argument("player", PlayerArgumentType.create());
+        for (WarnPreset preset : WarnPreset.values()) {
+            argument = argument.then(literal(preset.name()).executes(context -> {
+                PlayerEntity player = PlayerArgumentType.get(context);
+                mc.getNetworkHandler().sendChatCommand("warn " + player.getName().getString() + " " + "Stop " + preset.asString() + ", if you continue, you will be banned");
+                return SINGLE_SUCCESS;
+            }).then(literal("-s").executes(context -> {
+                PlayerEntity player = PlayerArgumentType.get(context);
+                mc.getNetworkHandler().sendChatCommand("warn " + player.getName().getString() + " " + "Stop " + preset.asString() + ", if you continue, you will be banned -s");
+                return SINGLE_SUCCESS;
+            })));
+        }
+        argument = argument.then(argument("text", StringArgumentType.greedyString()).executes(context -> {
             PlayerEntity player = PlayerArgumentType.get(context);
             String text = StringArgumentType.getString(context, "text");
             String command = "warn " + player.getName().getString() + " " + "Stop " + text.replace(" -s", "") + ", if you continue, you will be banned";
@@ -29,7 +36,8 @@ public class MineplayWarnPresetsCommand extends Command {
             }
             mc.getNetworkHandler().sendChatCommand(command);
             return SINGLE_SUCCESS;
-        })));
+        }));
+        builder.then(argument);
     }
 
     private enum WarnPreset implements StringIdentifiable {
@@ -45,7 +53,7 @@ public class MineplayWarnPresetsCommand extends Command {
             if (this == Griefing) {
                 return "Griefing";
             } else if (this == InappropriateBuilds) {
-                return "Inappropriate Builds";
+                return "Building Inappropriate Builds";
             } else if (this == ActingInappropriately) {
                 return "Acting Inappropriately";
             } else if (this == BeingRacist) {
