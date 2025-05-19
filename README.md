@@ -26,3 +26,6 @@ This meteor addon adds a few useful commands and modules, with some features for
  - `.mp-rban`: Will rban a roblox player using mineplay admin rban presets (requires /rban).
  - `.mp-rwarn`: Will warn a roblox player using mineplay admin warn presets.
  - `.mp-warn`: Will warn a player using mineplay admin warn presets (requires /warn).
+
+## Other Features
+ - Improves meteor-rejects ChatBot to allow you to get the sender with `<sender>`

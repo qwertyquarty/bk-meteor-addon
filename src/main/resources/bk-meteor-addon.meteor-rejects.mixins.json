@@ -1,0 +1,11 @@
+{
+  "required": false,
+  "package": "org.bknibb.bk_meteor_addon.mixin.meteor_rejects",
+  "compatibilityLevel": "JAVA_21",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "ChatBotMixin"
+  ]
+}

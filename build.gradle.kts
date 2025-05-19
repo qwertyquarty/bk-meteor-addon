@@ -17,6 +17,9 @@ repositories {
         name = "meteor-maven-snapshots"
         url = uri("https://maven.meteordev.org/snapshots")
     }
+    maven {
+        url = uri("https://jitpack.io")
+    }
 }
 
 dependencies {
@@ -27,6 +30,7 @@ dependencies {
 
     // Meteor
     modImplementation("meteordevelopment:meteor-client:${properties["minecraft_version"] as String}-SNAPSHOT")
+    modImplementation("com.github.AntiCope:meteor-rejects:${properties["meteor_rejects_version"] as String}") { isTransitive = false }
 }
 
 tasks {
