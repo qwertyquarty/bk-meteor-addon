@@ -487,9 +487,22 @@ public class BadWordFinder extends Module {
                     mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(pos.getX(), pos.getY(), pos.getZ(), false, mc.player.horizontalCollision));
                     mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
                     mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), mc.player.getY(), mc.player.getZ(), false, mc.player.horizontalCollision));
+                    badSigns.remove(pos);
                 } else if (eraseSigns.get()) {
-                    mc.player.networkHandler.sendPacket(new UpdateSignC2SPacket(pos, true, "", "", "", ""));
+                    mc.getNetworkHandler().sendPacket(new UpdateSignC2SPacket(pos, !back, "", "", "", ""));
+                    if (badSigns.containsKey(pos)) {
+                        BadSign badSign = badSigns.get(pos);
+                        if (back) {
+                            badSign.backBad = false;
+                        } else {
+                            badSign.frontBad = false;
+                        }
+                        if (!badSign.frontBad && !badSign.backBad) {
+                            badSigns.remove(pos);
+                        }
+                    }
                 }
+                return;
             }
             if (badSigns.containsKey(pos)) {
                 BadSign badSign = badSigns.get(pos);
