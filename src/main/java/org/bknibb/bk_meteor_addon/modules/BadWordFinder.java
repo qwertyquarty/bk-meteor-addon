@@ -61,6 +61,15 @@ public class BadWordFinder extends Module {
         .name("extra-regex-checks")
         .description("Use extra regex checks to find more variants of bad words.")
         .defaultValue(true)
+        .onChanged(state -> refreshSigns())
+        .build()
+    );
+
+    private final Setting<Boolean> extraNormalizing = sgGeneral.add(new BoolSetting.Builder()
+        .name("extra-normalizing")
+        .description("Use extra normalizing on messages to detect characters that look like other characters.")
+        .defaultValue(true)
+        .onChanged(state -> refreshSigns())
         .build()
     );
 
@@ -163,7 +172,7 @@ public class BadWordFinder extends Module {
     private void onMessageRecieve(ReceiveMessageEvent event) {
         if (!checkChatMessages.get()) return;
         Text message = event.getMessage();
-        if (message.getString().startsWith("[Meteor]")) return;
+        if (message.getString().contains("[Meteor]")) return;
         EXECUTOR.submit(() -> {
             String badWord = getBadWord(message.getString().replaceAll("§[0-9a-fk-or]", ""));
             if (badWord != null) {
@@ -222,6 +231,7 @@ public class BadWordFinder extends Module {
     private List<String> strictBadWords;
     private List<String> moderatelyStrictBadWords;
     private List<String> lessStrictBadWords;
+    private Map<Character, Character> confusables;
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
 //    @Override
@@ -330,6 +340,28 @@ public class BadWordFinder extends Module {
         return new ArrayList<>();
     }
 
+    public Map<Character, Character> getConfusables() {
+        if (confusables == null) {
+            Identifier id = Identifier.of("bk-meteor-addon", "confusables.json");
+            Resource recource = mc.getResourceManager().getResource(id).orElse(null);
+            if (recource == null) {
+                BkMeteorAddon.LOG.error("Failed to load confusables list: " + id);
+                info("Failed to load confusables list.");
+                toggle();
+                return new HashMap<>();
+            }
+            try (InputStream stream = recource.getInputStream()) {
+                confusables = GSON.fromJson(new String(stream.readAllBytes(), StandardCharsets.UTF_8), new TypeToken<Map<Character, Character>>() {}.getType());
+            } catch (Exception e) {
+                BkMeteorAddon.LOG.error("Failed to load confusables list: " + e.getMessage());
+                info("Failed to load confusables list.");
+                toggle();
+                return new HashMap<>();
+            }
+        }
+        return confusables;
+    }
+
     private final String suffixPattern =
         "(?:" +
         "o" +                                // o
@@ -340,17 +372,46 @@ public class BadWordFinder extends Module {
         "|e[\\W_]*d" +                       // ed
         ")?";
 
+    private final String suffixPatternNoSpace =
+        "(?:" +
+        "o" +                                // o
+        "|i[^\\w\\s_]*n[^\\w\\s_]*g" +             // ing
+        "|s" +                               // s
+        "|e[^\\w\\s_]*r[^\\w\\s_]*s" +             // ers
+        "|e[^\\w\\s_]*r" +                      // er
+        "|e[^\\w\\s_]*d" +                      // ed
+        ")?";
+
     private boolean doCheckWord(String word, String message) {
-        String regex = "(?i)(?<=^|\\W)" + Pattern.quote(word) + "(?=\\W|$)";
+        String regex = "(?i)(?<=^|\\W)" + Pattern.quote(word.replace("<nospaces>", "")) + "(?=\\W|$)";
         if (extraRegexChecks.get()) {
-            String interleaved = String.join("[\\W_]*", Arrays.stream(word.split("")).map(Pattern::quote).toArray(String[]::new));
+            String interleaved;
+            if (word.startsWith("<nospaces>")) {
+                interleaved = String.join("[^\\w\\s_]*", Arrays.stream(word.replace("<nospaces>", "").split("")).map(Pattern::quote).toArray(String[]::new));
+            } else {
+                interleaved = String.join("[\\W_]*", Arrays.stream(word.split("")).map(Pattern::quote).toArray(String[]::new));
+            }
             String currentSuffixPattern = suffixPattern;
             if (word.endsWith("o") || word.endsWith("ing") || word.endsWith("s") || word.endsWith("ers") || word.endsWith("er") || word.endsWith("ed")) {
                 currentSuffixPattern = "";
+            } else if (word.startsWith("<nospaces>")) {
+                currentSuffixPattern = suffixPatternNoSpace;
             }
-            regex = "(?i)(?<=^|\\W)" + interleaved + "[\\W_]*" + currentSuffixPattern + "(?=\\W|$)";
+            if (word.startsWith("<nospaces>")) {
+                regex = "(?i)(?<=^|\\W)" + interleaved + "[^\\w\\s_]*" + currentSuffixPattern + "(?=\\W|$)";
+            } else {
+                regex = "(?i)(?<=^|\\W)" + interleaved + "[\\W_]*" + currentSuffixPattern + "(?=\\W|$)";
+            }
         }
         Pattern pattern = Pattern.compile(regex);
+        if (extraNormalizing.get()) {
+            Map<Character, Character> confusables = getConfusables();
+            StringBuilder sb = new StringBuilder();
+            for (char c : message.toCharArray()) {
+                sb.append(confusables.getOrDefault(c, c));
+            }
+            message = sb.toString();
+        }
         Matcher matcher = pattern.matcher(message);
         return matcher.find();
     }
@@ -387,20 +448,20 @@ public class BadWordFinder extends Module {
             if (includeDefaultBadWordList.get()) {
                 for (String word : getBadWordsList()) {
                     if (doCheckWord(word, message)) {
-                        return word;
+                        return word.replace("<nospaces>", "");
                     }
                 }
             }
             for (String word : whitelist.get()) {
                 if (doCheckWord(word, message)) {
-                    return word;
+                    return word.replace("<nospaces>", "");
                 }
             }
         } else {
             for (String word : getBadWordsList()) {
                 if (blacklist.get().contains(word)) continue;
                 if (doCheckWord(word, message)) {
-                    return word;
+                    return word.replace("<nospaces>", "");
                 }
             }
         }
