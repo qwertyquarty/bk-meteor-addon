@@ -9,7 +9,6 @@ import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.fabricmc.loader.api.FabricLoader;
 import org.bknibb.bk_meteor_addon.commands.*;
 import org.bknibb.bk_meteor_addon.modules.*;
-import org.bknibb.bk_meteor_addon.update_system.UpdateSystem;
 import org.slf4j.Logger;
 
 import java.nio.file.DirectoryStream;

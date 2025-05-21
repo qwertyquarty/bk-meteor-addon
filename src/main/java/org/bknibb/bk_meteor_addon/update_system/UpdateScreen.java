@@ -9,7 +9,6 @@ import meteordevelopment.meteorclient.utils.render.MeteorToast;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Items;
-import org.apache.commons.lang3.NotImplementedException;
 import org.bknibb.bk_meteor_addon.ConfigModifier;
 
 import java.io.IOException;
@@ -81,19 +80,14 @@ public class UpdateScreen extends WindowScreen {
                 case Http.SUCCESS -> {
                     Path modPath = FabricLoader.getInstance().getModContainer("bk-meteor-addon").get().getOrigin().getPaths().getFirst();
                     Path target = modPath.getParent().resolve(relaseResponse.assets.getFirst().name);
-                    try (OutputStream os = Files.newOutputStream(target)) {
-                        res.body().transferTo(os);
+                    try (OutputStream os = Files.newOutputStream(target); InputStream is = res.body()) {
+                        is.transferTo(os);
                     } catch (IOException e) {
                         close();
                         UpdateSystem.LOG.warn("Failed to download update: " + e.getMessage());
                         //MinecraftClient.getInstance().getToastManager().add(new MeteorToast(null, "Update Failed", "Failed to download update: " + e.getMessage()));
                         MinecraftClient.getInstance().setScreen(new UpdateFailedScreen(theme, addon, relaseResponse, "Failed to download update", e.getMessage()));
                         return;
-                    }
-                    try {
-                        res.body().close();
-                    } catch (IOException ignored) {
-
                     }
 //                    if (!modPath.equals(target)) {
 //                        //try {

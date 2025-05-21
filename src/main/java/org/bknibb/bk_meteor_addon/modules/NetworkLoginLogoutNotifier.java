@@ -14,7 +14,6 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.misc.NbtUtils;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.c2s.play.RequestCommandCompletionsC2SPacket;
 import net.minecraft.network.packet.s2c.play.CommandSuggestionsS2CPacket;
@@ -103,7 +102,7 @@ public class NetworkLoginLogoutNotifier extends Module {
     @Override
     public WWidget getWidget(GuiTheme theme) {
         WHorizontalList list = theme.horizontalList();
-        list.add(theme.button("Copy List Settings")).widget().action = () -> {;
+        list.add(theme.button("Copy List Settings")).widget().action = () -> {
             NbtCompound tag = new NbtCompound();
             tag.put("listMode", listMode.toTag());
             tag.put("blacklist", blacklist.toTag());

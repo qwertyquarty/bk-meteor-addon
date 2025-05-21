@@ -4,30 +4,17 @@ import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import org.bknibb.bk_meteor_addon.modules.MineplayRemoveOfflineRobloxPlayers;
 
 public class MineplayUtils {
-//    public static boolean isRobloxPlayer(PlayerEntity player) {
-//        if (player == null || player.getDisplayName() == null || player.getDisplayName().getStyle().getColor() == null) {
-//            return false;
-//        }
-//        return player.getDisplayName().getStyle().getColor().getRgb() == 0xFF999B;
-//    }
-    public static boolean isRobloxPlayer(PlayerListEntry entry) {
+public static boolean isRobloxPlayer(PlayerListEntry entry) {
         if (entry == null || entry.getDisplayName() == null || entry.getDisplayName().getStyle().getColor() == null) {
             return false;
         }
         return entry.getDisplayName().getStyle().getColor().getRgb() == 0xFF999B;
     }
 //    using PlayerListS2CPacket.Entry is unsafe as it has not always got new/correct data
-//    public static boolean isRobloxPlayer(PlayerListS2CPacket.Entry entry) {
-//        if (entry == null || entry.displayName() == null || entry.displayName().getStyle().getColor() == null) {
-//            return false;
-//        }
-//        return entry.displayName().getStyle().getColor().getRgb() == 0xFF999B;
-//    }
-    public static boolean isDisconnectedPlayer(PlayerEntity player) {
+public static boolean isDisconnectedPlayer(PlayerEntity player) {
         MinecraftClient client = MinecraftClient.getInstance();
         PlayerListEntry entry = client.getNetworkHandler().getPlayerListEntry(player.getUuid());
         if (entry == null) {
@@ -50,11 +37,7 @@ public class MineplayUtils {
         return entry.getLatency() == 0;
     }
 //    using PlayerListS2CPacket.Entry is unsafe as it has not always got new/correct data
-//    public static boolean isDisconnectedPlayer(PlayerListS2CPacket.Entry entry) {
-//        if (!isRobloxPlayer(entry)) return false;
-//        return entry.latency() == 0;
-//    }
-    public static boolean isOnMineplay() {
+public static boolean isOnMineplay() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.getCurrentServerEntry() == null) {
             return false;
@@ -72,6 +55,6 @@ public class MineplayUtils {
         return (canHide() && entry.getProfile().getId() != MinecraftClient.getInstance().player.getUuid() && isDisconnectedPlayer(entry));
     }
     public static boolean hidePlayer(String player) {
-        return (canHide() && player != MinecraftClient.getInstance().player.getName().getString() && isDisconnectedPlayer(player));
+        return (canHide() && !player.equals(MinecraftClient.getInstance().player.getName().getString()) && isDisconnectedPlayer(player));
     }
 }

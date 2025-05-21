@@ -2,11 +2,8 @@ package org.bknibb.bk_meteor_addon.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import meteordevelopment.meteorclient.systems.modules.Modules;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.PlayerListHud;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
 import org.bknibb.bk_meteor_addon.MineplayUtils;
 import org.bknibb.bk_meteor_addon.modules.MineplayRemoveOfflineRobloxPlayers;
 import org.spongepowered.asm.mixin.Mixin;

@@ -1,24 +1,20 @@
 package org.bknibb.bk_meteor_addon.mixin.meteor_rejects;
 
 import anticope.rejects.modules.ChatBot;
-import com.llamalad7.mixinextras.sugar.Local;
 import meteordevelopment.meteorclient.events.game.ReceiveMessageEvent;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
-import org.bknibb.bk_meteor_addon.BkMeteorAddon;
 import org.bknibb.bk_meteor_addon.ConfigModifier;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Mixin(ChatBot.class)
 public class ChatBotMixin {
-    private static final ThreadLocal<String> currentCmd = new ThreadLocal<>();
+    @Unique private static final ThreadLocal<String> currentCmd = new ThreadLocal<>();
     @Redirect(method = "onMessageRecieve", at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/utils/player/ChatUtils;sendPlayerMsg(Ljava/lang/String;)V"), remap = false)
     private void sendPlayerMsg(String message, ReceiveMessageEvent event) {
         if (ConfigModifier.get().chatBotSender.get() && message.contains("<sender>")) {

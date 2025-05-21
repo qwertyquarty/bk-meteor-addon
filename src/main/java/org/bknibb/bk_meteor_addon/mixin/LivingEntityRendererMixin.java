@@ -1,14 +1,11 @@
 package org.bknibb.bk_meteor_addon.mixin;
 
 import meteordevelopment.meteorclient.systems.modules.Modules;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.render.entity.state.LivingEntityRenderState;
 import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import org.bknibb.bk_meteor_addon.MineplayUtils;
 import org.bknibb.bk_meteor_addon.modules.MineplayRemoveOfflineRobloxPlayers;
 import org.spongepowered.asm.mixin.Mixin;

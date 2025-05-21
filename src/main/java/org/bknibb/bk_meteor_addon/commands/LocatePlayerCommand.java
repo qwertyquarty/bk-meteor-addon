@@ -1,6 +1,5 @@
 package org.bknibb.bk_meteor_addon.commands;
 
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.meteorclient.commands.Command;
@@ -8,29 +7,20 @@ import meteordevelopment.meteorclient.commands.arguments.PlayerArgumentType;
 import meteordevelopment.meteorclient.events.render.Render2DEvent;
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
 import meteordevelopment.meteorclient.renderer.Renderer2D;
-import meteordevelopment.meteorclient.systems.config.Config;
-import meteordevelopment.meteorclient.systems.friends.Friends;
 import meteordevelopment.meteorclient.systems.modules.Modules;
-import meteordevelopment.meteorclient.utils.Utils;
-import meteordevelopment.meteorclient.utils.entity.EntityUtils;
 import meteordevelopment.meteorclient.utils.entity.Target;
-import meteordevelopment.meteorclient.utils.player.PlayerUtils;
 import meteordevelopment.meteorclient.utils.render.NametagUtils;
 import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import meteordevelopment.meteorclient.utils.render.color.Color;
-import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec2f;
-import org.bknibb.bk_meteor_addon.MineplayUtils;
 import org.bknibb.bk_meteor_addon.modules.PlayerTracers;
 import org.joml.Vector2f;
 import org.joml.Vector3d;
 
-import java.time.Duration;
 import java.time.Instant;
 
 public class LocatePlayerCommand extends Command {
@@ -46,8 +36,7 @@ public class LocatePlayerCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
         builder.then(argument("player", PlayerArgumentType.create()).executes(context -> {
-            PlayerEntity player = PlayerArgumentType.get(context);
-            targetPlayer = player;
+            targetPlayer = PlayerArgumentType.get(context);
             startTimer = Instant.now();
             if (!running) {
                 running = true;

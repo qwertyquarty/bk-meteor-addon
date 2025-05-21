@@ -1,7 +1,5 @@
 package org.bknibb.bk_meteor_addon.modules;
 
-import com.mojang.brigadier.suggestion.Suggestion;
-import com.mojang.brigadier.suggestion.Suggestions;
 import meteordevelopment.meteorclient.events.game.GameLeftEvent;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
@@ -12,13 +10,9 @@ import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.friends.Friends;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.misc.NbtUtils;
-import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
-import net.minecraft.network.packet.c2s.play.RequestCommandCompletionsC2SPacket;
-import net.minecraft.network.packet.s2c.play.CommandSuggestionsS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -89,7 +83,7 @@ public class VivecraftVanishDetect extends Module {
     private int timer;
     private Integer waitingPacket = 0;
     public List<String> vanishedPlayers = new ArrayList<>();
-    private List<String> tempVrPlayers = new ArrayList<>();
+    private final List<String> tempVrPlayers = new ArrayList<>();
 
     public VivecraftVanishDetect() {
         super(BkMeteorAddon.CATEGORY, "Vivecraft Vanish Detect", "Detects if a player is in vanish mode using /vr list (the server and the player vanishing must have vivecraft).");
@@ -98,7 +92,7 @@ public class VivecraftVanishDetect extends Module {
     @Override
     public WWidget getWidget(GuiTheme theme) {
         WHorizontalList list = theme.horizontalList();
-        list.add(theme.button("Copy List Settings")).widget().action = () -> {;
+        list.add(theme.button("Copy List Settings")).widget().action = () -> {
             NbtCompound tag = new NbtCompound();
             tag.put("listMode", listMode.toTag());
             tag.put("blacklist", blacklist.toTag());
@@ -160,8 +154,7 @@ public class VivecraftVanishDetect extends Module {
                 Pattern pattern = Pattern.compile("\\((\\d+)\\)");
                 Matcher matcher = pattern.matcher(packet.content().getString());
                 if (matcher.find()) {
-                    int number = Integer.parseInt(matcher.group(1));
-                    waitingPacket = number;
+                    waitingPacket = Integer.parseInt(matcher.group(1));
                     tempVrPlayers.clear();
                     event.cancel();
                 } else {

@@ -234,27 +234,7 @@ public class BadWordFinder extends Module {
     private Map<Character, Character> confusables;
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
-//    @Override
-//    public void onActivate() {
-//        if (badWords == null) {
-//            Http.Request request = Http.get("https://raw.githubusercontent.com/zacanger/profane-words/refs/heads/master/words.json");
-//            request.exceptionHandler(e -> {
-//                BkMeteorAddon.LOG.error("Failed to load bad words list: " + e.getMessage());
-//                info("Failed to load bad words list.");
-//                toggle();
-//            });
-//            HttpResponse<List<String>> res = request.sendJsonResponse(new TypeToken<List<String>>() {}.getType());
-//            if (res.statusCode() == Http.SUCCESS) {
-//                badWords = res.body();
-//            } else {
-//                BkMeteorAddon.LOG.error("Failed to load bad words list: " + res.statusCode());
-//                info("Failed to load bad words list.");
-//                toggle();
-//            }
-//        }
-//
-//    }
-    @Override
+@Override
     public void onActivate() {
         refreshSigns();
     }
@@ -468,7 +448,7 @@ public class BadWordFinder extends Module {
         return null;
     }
 
-    private Map<BlockPos, BadSign> badSigns = new ConcurrentHashMap<>();
+    private final Map<BlockPos, BadSign> badSigns = new ConcurrentHashMap<>();
 
     private void doBadWordCheck(Text[] texts, BlockPos pos, boolean back) {
         boolean hasBadWord = false;
@@ -555,7 +535,7 @@ public class BadWordFinder extends Module {
     }
 
 
-    private class BadSign {
+    private static class BadSign {
         public boolean frontBad;
         public boolean backBad;
         public BadSign(boolean frontBad, boolean backBad) {

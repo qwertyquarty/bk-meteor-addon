@@ -10,8 +10,6 @@ import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.config.Config;
 import meteordevelopment.meteorclient.systems.friends.Friends;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.systems.modules.Modules;
-import meteordevelopment.meteorclient.systems.modules.render.Freecam;
 import meteordevelopment.meteorclient.utils.entity.EntityUtils;
 import meteordevelopment.meteorclient.utils.entity.Target;
 import meteordevelopment.meteorclient.utils.misc.NbtUtils;
@@ -161,7 +159,7 @@ public class PlayerTracers extends Module {
         .name("show-friend-colors")
         .description("Whether or not to override the distance color of friends with the friend color.")
         .defaultValue(true)
-        .visible(() -> distance.get())
+        .visible(distance::get)
         .build()
     );
 
@@ -183,7 +181,7 @@ public class PlayerTracers extends Module {
     @Override
     public WWidget getWidget(GuiTheme theme) {
         WHorizontalList list = theme.horizontalList();
-        list.add(theme.button("Copy List Settings")).widget().action = () -> {;
+        list.add(theme.button("Copy List Settings")).widget().action = () -> {
             NbtCompound tag = new NbtCompound();
             tag.put("listMode", listMode.toTag());
             tag.put("blacklist", blacklist.toTag());

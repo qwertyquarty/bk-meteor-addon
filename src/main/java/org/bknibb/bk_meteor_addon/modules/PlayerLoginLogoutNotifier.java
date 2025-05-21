@@ -1,7 +1,6 @@
 package org.bknibb.bk_meteor_addon.modules;
 
 import meteordevelopment.meteorclient.events.game.GameJoinedEvent;
-import meteordevelopment.meteorclient.events.game.GameLeftEvent;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.gui.GuiTheme;
@@ -16,7 +15,6 @@ import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket;
@@ -132,7 +130,7 @@ public class PlayerLoginLogoutNotifier extends Module {
     @Override
     public WWidget getWidget(GuiTheme theme) {
         WHorizontalList list = theme.horizontalList();
-        list.add(theme.button("Copy List Settings")).widget().action = () -> {;
+        list.add(theme.button("Copy List Settings")).widget().action = () -> {
             NbtCompound tag = new NbtCompound();
             tag.put("listMode", listMode.toTag());
             tag.put("blacklist", blacklist.toTag());
@@ -172,18 +170,9 @@ public class PlayerLoginLogoutNotifier extends Module {
     }
 
     @EventHandler
-    private void onGameLeave(GameLeftEvent event) {
-        //loginPacket = true;
-    }
-
-    @EventHandler
     private void onReceivePacket(PacketEvent.Receive event) {
         switch (event.packet) {
             case PlayerListS2CPacket packet when joinsLeavesMode.get().equals(JoinLeaveModes.Both) || joinsLeavesMode.get().equals(JoinLeaveModes.Joins) -> {
-//                if (loginPacket) {
-//                    loginPacket = false;
-//                    return;
-//                }
 
                 if (packet.getActions().contains(PlayerListS2CPacket.Action.ADD_PLAYER)) {
                     createJoinNotifications(packet);

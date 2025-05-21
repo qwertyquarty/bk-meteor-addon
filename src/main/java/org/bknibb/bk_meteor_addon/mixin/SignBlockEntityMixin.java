@@ -11,7 +11,6 @@ import net.minecraft.util.math.BlockPos;
 import org.bknibb.bk_meteor_addon.modules.BadWordFinder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -19,10 +18,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(SignBlockEntity.class)
 public abstract class SignBlockEntityMixin extends BlockEntity {
-//    @Unique
-//    private boolean frontBadWords = false;
-//    @Unique
-//    private boolean backBadWords = false;
 
     @Shadow
     protected abstract SignText parseLines(SignText signText);
@@ -30,14 +25,6 @@ public abstract class SignBlockEntityMixin extends BlockEntity {
     private SignBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
-
-//    @Inject(method = "getFrontText", at = @At("RETURN"))
-//    private void onGetFrontText(CallbackInfoReturnable<SignText> cir) {
-//        if (Modules.get().get(BadWordFinder.class).isActive()) {
-//            Text[] texts = cir.getReturnValue().getMessages(false);
-//            BadWordFinder.badWordCheck(texts, getPos());
-//        }
-//    }
 
     @Redirect(method = "method_49850", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/SignBlockEntity;parseLines(Lnet/minecraft/block/entity/SignText;)Lnet/minecraft/block/entity/SignText;"))
     private SignText onFrontWordsReadParse(SignBlockEntity instance, SignText signText) {

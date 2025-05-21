@@ -1,20 +1,10 @@
 package org.bknibb.bk_meteor_addon.modules;
 
-import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.BoolSetting;
-import meteordevelopment.meteorclient.settings.EnumSetting;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.utils.player.ChatUtils;
-import meteordevelopment.orbit.EventHandler;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.entity.player.PlayerEntity;
 import org.bknibb.bk_meteor_addon.BkMeteorAddon;
-import org.bknibb.bk_meteor_addon.MineplayUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MineplayRemoveOfflineRobloxPlayers extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();

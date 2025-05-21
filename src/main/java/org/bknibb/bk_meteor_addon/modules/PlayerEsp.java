@@ -11,7 +11,6 @@ import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.config.Config;
 import meteordevelopment.meteorclient.systems.friends.Friends;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.systems.modules.render.ESP;
 import meteordevelopment.meteorclient.utils.entity.EntityUtils;
 import meteordevelopment.meteorclient.utils.misc.NbtUtils;
 import meteordevelopment.meteorclient.utils.player.PlayerUtils;
@@ -21,7 +20,6 @@ import meteordevelopment.meteorclient.utils.render.color.Color;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.Box;
@@ -30,7 +28,6 @@ import org.bknibb.bk_meteor_addon.BkMeteorAddon;
 import org.joml.Vector3d;
 
 import java.util.List;
-import java.util.Set;
 
 public class PlayerEsp extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
@@ -141,7 +138,7 @@ public class PlayerEsp extends Module {
     @Override
     public WWidget getWidget(GuiTheme theme) {
         WHorizontalList list = theme.horizontalList();
-        list.add(theme.button("Copy List Settings")).widget().action = () -> {;
+        list.add(theme.button("Copy List Settings")).widget().action = () -> {
             NbtCompound tag = new NbtCompound();
             tag.put("listMode", listMode.toTag());
             tag.put("blacklist", blacklist.toTag());
