@@ -488,6 +488,7 @@ public class BadWordFinder extends Module {
                     mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
                     mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), mc.player.getY(), mc.player.getZ(), false, mc.player.horizontalCollision));
                     badSigns.remove(pos);
+                    return;
                 } else if (eraseSigns.get()) {
                     mc.getNetworkHandler().sendPacket(new UpdateSignC2SPacket(pos, !back, "", "", "", ""));
                     if (badSigns.containsKey(pos)) {
@@ -501,8 +502,8 @@ public class BadWordFinder extends Module {
                             badSigns.remove(pos);
                         }
                     }
+                    return;
                 }
-                return;
             }
             if (badSigns.containsKey(pos)) {
                 BadSign badSign = badSigns.get(pos);
