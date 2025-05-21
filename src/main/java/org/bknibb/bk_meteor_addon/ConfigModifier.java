@@ -17,6 +17,20 @@ public class ConfigModifier {
             .build()
     );
 
+    public final Setting<Boolean> chatBotSender = sgBkMeteorAddon.add(new BoolSetting.Builder()
+            .name("chat-bot-sender")
+            .description("Replace <sender> with the sender's name in the meteor-rejects chat bot.")
+            .defaultValue(true)
+            .build()
+    );
+
+    public final Setting<Boolean> chatBotArgs = sgBkMeteorAddon.add(new BoolSetting.Builder()
+        .name("chat-bot-args")
+        .description("Replace <args> with the args passed in the chat in the meteor-rejects chat bot (warning changes the check from the end of the message to contained in the message).")
+        .defaultValue(true)
+        .build()
+    );
+
     public static ConfigModifier get() {
         if (INSTANCE == null) INSTANCE = new ConfigModifier();
         return INSTANCE;

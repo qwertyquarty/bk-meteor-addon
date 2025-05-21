@@ -7,7 +7,7 @@
     "BetterBreakMixin",
     "EntityRenderDispatcherMixin",
     "LivingEntityRendererMixin",
-    "MinecraftClientMixin",
+    "TitleScreenMixin",
     "NametagsMixin",
     "PlayerListHudMixin"
   ],
