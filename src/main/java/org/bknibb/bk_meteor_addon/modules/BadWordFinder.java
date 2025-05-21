@@ -234,7 +234,7 @@ public class BadWordFinder extends Module {
     private Map<Character, Character> confusables;
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
-@Override
+    @Override
     public void onActivate() {
         refreshSigns();
     }

@@ -13,8 +13,7 @@ public static boolean isRobloxPlayer(PlayerListEntry entry) {
         }
         return entry.getDisplayName().getStyle().getColor().getRgb() == 0xFF999B;
     }
-//    using PlayerListS2CPacket.Entry is unsafe as it has not always got new/correct data
-public static boolean isDisconnectedPlayer(PlayerEntity player) {
+    public static boolean isDisconnectedPlayer(PlayerEntity player) {
         MinecraftClient client = MinecraftClient.getInstance();
         PlayerListEntry entry = client.getNetworkHandler().getPlayerListEntry(player.getUuid());
         if (entry == null) {
@@ -36,8 +35,7 @@ public static boolean isDisconnectedPlayer(PlayerEntity player) {
         if (!isRobloxPlayer(entry)) return false;
         return entry.getLatency() == 0;
     }
-//    using PlayerListS2CPacket.Entry is unsafe as it has not always got new/correct data
-public static boolean isOnMineplay() {
+    public static boolean isOnMineplay() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.getCurrentServerEntry() == null) {
             return false;
