@@ -168,6 +168,7 @@ public class PlayerEsp extends Module {
     @EventHandler
     private void onRender3D(Render3DEvent event) {
         if (mode.get() == Mode._2D) return;
+        if (mc.world == null) return;
 
         count = 0;
 
@@ -203,6 +204,7 @@ public class PlayerEsp extends Module {
     @EventHandler
     private void onRender2D(Render2DEvent event) {
         if (mode.get() != Mode._2D) return;
+        if (mc.world == null) return;
 
         Renderer2D.COLOR.begin();
         count = 0;

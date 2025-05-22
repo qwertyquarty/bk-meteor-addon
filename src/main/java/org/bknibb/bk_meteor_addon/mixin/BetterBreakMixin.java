@@ -23,6 +23,7 @@ public class BetterBreakMixin {
         if (!Modules.get().isActive(MineplayBetterBreak.class)) return;
         if (!MineplayUtils.isOnMineplay()) return;
         if (pos.getY() < 0) return;
+        if (mc.interactionManager == null || mc.getNetworkHandler() == null) return;
 
         mc.interactionManager.breakBlock(pos);
         mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, pos, direction));

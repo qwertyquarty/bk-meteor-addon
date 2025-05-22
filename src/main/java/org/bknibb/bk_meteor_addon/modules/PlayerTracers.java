@@ -242,6 +242,7 @@ public class PlayerTracers extends Module {
     @EventHandler
     private void onRender(Render3DEvent event) {
         if (mc.options.hudHidden || style.get() == TracerStyle.Offscreen) return;
+        if (mc.world == null) return;
         count = 0;
 
         for (Entity entity : mc.world.getEntities()) {
@@ -267,6 +268,7 @@ public class PlayerTracers extends Module {
     @EventHandler
     public void onRender2D(Render2DEvent event) {
         if (mc.options.hudHidden || style.get() != TracerStyle.Offscreen) return;
+        if (mc.world == null) return;
         count = 0;
 
         Renderer2D.COLOR.begin();

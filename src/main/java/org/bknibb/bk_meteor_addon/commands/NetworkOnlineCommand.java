@@ -31,6 +31,7 @@ public class NetworkOnlineCommand extends Command {
 
     private void showOnlineNotification(String name) {
         if (Modules.get().get(NetworkLoginLogoutNotifier.class).simpleNotifications.get()) {
+            if (mc.player == null) return;
             mc.player.sendMessage(Text.literal(
                 Formatting.GRAY + "["
                     + Formatting.LIGHT_PURPLE + "Network"

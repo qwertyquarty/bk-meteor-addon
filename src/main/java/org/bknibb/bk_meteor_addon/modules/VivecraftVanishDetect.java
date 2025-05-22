@@ -125,6 +125,7 @@ public class VivecraftVanishDetect extends Module {
         if (mc.isInSingleplayer()) return;
         if (mc.getCurrentServerEntry() == null) return;
         if (mc.getCurrentServerEntry().isLocal()) return;
+        if (mc.getNetworkHandler() == null) return;
         timer++;
         if (timer > scanInterval.get()) {
             timer = 0;
@@ -171,7 +172,7 @@ public class VivecraftVanishDetect extends Module {
                         tempVrPlayers.add(name);
                     }
                     event.cancel();
-                    if (waitingPacket == 0) {
+                    if (waitingPacket == 0 && mc.player != null && mc.getNetworkHandler() != null) {
                         List<String> prevVanishedPlayers = vanishedPlayers;
                         vanishedPlayers = new ArrayList<>();
                         for (String name : tempVrPlayers) {
@@ -185,7 +186,7 @@ public class VivecraftVanishDetect extends Module {
                                     continue;
                                 }
                             }
-                            if (MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(name) != null) continue;
+                            if (mc.getNetworkHandler().getPlayerListEntry(name) != null) continue;
                             vanishedPlayers.add(name);
                             if (!prevVanishedPlayers.contains(name)) {
                                 showVanishedNotification(name);
@@ -194,7 +195,7 @@ public class VivecraftVanishDetect extends Module {
                         tempVrPlayers.clear();
                         for (String name : prevVanishedPlayers) {
                             if (ignoreSelf.get() && name.equals(mc.player.getName().getString())) continue;
-                            //if (ignoreInServer.gte() && MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(name) != null) return;
+                            //if (ignoreInServer.gte() && mc.getNetworkHandler().getPlayerListEntry(name) != null) return;
                             if (listMode.get() == ListMode.Blacklist) {
                                 if (blacklist.get().contains(name)) {
                                     continue;
@@ -206,7 +207,7 @@ public class VivecraftVanishDetect extends Module {
                             }
 
                             if (!vanishedPlayers.contains(name)) {
-                                if (MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(name) == null) {
+                                if (mc.getNetworkHandler().getPlayerListEntry(name) == null) {
                                     if (leaveNotification.get()) {
                                         showLeaveNotification(name);
                                     }

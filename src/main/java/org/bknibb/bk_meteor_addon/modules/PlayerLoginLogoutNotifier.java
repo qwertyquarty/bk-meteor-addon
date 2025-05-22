@@ -190,6 +190,7 @@ public class PlayerLoginLogoutNotifier extends Module {
         while (timer >= notificationDelay.get() && !messageQueue.isEmpty()) {
             timer = 0;
             if (simpleNotifications.get()) {
+                if (mc.player == null) continue;
                 mc.player.sendMessage(messageQueue.removeFirst(), false);
             } else {
                 ChatUtils.sendMsg(messageQueue.removeFirst());
@@ -201,7 +202,7 @@ public class PlayerLoginLogoutNotifier extends Module {
             }
             taskQueue.removeFirst().getRight().run();
         }
-        if (Modules.get().isActive(MineplayRemoveOfflineRobloxPlayers.class) && Modules.get().get(MineplayRemoveOfflineRobloxPlayers.class).hidePlayerLoginLogoutMessages.get()) {
+        if (Modules.get().isActive(MineplayRemoveOfflineRobloxPlayers.class) && Modules.get().get(MineplayRemoveOfflineRobloxPlayers.class).hidePlayerLoginLogoutMessages.get() && mc.getNetworkHandler() != null) {
             List<String> prevPlayers = onlineRobloxPlayers;
             onlineRobloxPlayers = new ArrayList<>();
             for (PlayerListEntry entry : mc.getNetworkHandler().getPlayerList()) {
@@ -240,10 +241,11 @@ public class PlayerLoginLogoutNotifier extends Module {
     }
 
     private void createJoinNotifications(PlayerListS2CPacket packet) {
+        if (mc.getNetworkHandler() == null || mc.player == null) return;
         for (PlayerListS2CPacket.Entry packetEntry : packet.getPlayerAdditionEntries()) {
             if (packetEntry.profile() == null) continue;
             taskQueue.addLast(new Pair<>(Instant.now(), () -> {
-                PlayerListEntry entry = MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(packetEntry.profile().getId());
+                PlayerListEntry entry = mc.getNetworkHandler().getPlayerListEntry(packetEntry.profile().getId());
                 if (entry == null) return;
                 if (ignoreSelf.get() && entry.getProfile().getId().equals(mc.player.getUuid())) return;
                 if (MineplayUtils.isOnMineplay() && MineplayUtils.isRobloxPlayer(entry) && mineplayPlatformFilter.get() == MineplayPlatformType.MINECRAFT)
@@ -268,7 +270,7 @@ public class PlayerLoginLogoutNotifier extends Module {
     }
 
     private void createLeaveNotification(PlayerRemoveS2CPacket packet) {
-        if (mc.getNetworkHandler() == null) return;
+        if (mc.getNetworkHandler() == null || mc.player == null) return;
 
         for (UUID id : packet.profileIds()) {
             PlayerListEntry toRemove = mc.getNetworkHandler().getPlayerListEntry(id);

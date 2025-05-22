@@ -135,6 +135,7 @@ public class NetworkLoginLogoutNotifier extends Module {
         if (mc.isInSingleplayer()) return;
         if (mc.getCurrentServerEntry() == null) return;
         if (mc.getCurrentServerEntry().isLocal()) return;
+        if (mc.getNetworkHandler() == null) return;
         timer++;
         if (timer > scanInterval.get()) {
             timer = 0;
@@ -158,12 +159,13 @@ public class NetworkLoginLogoutNotifier extends Module {
             waitingPacket = null;
             Suggestions suggestions = packet.getSuggestions();
             if (suggestions.isEmpty()) return;
+            if (mc.player == null) return;
             List<String> prevOnlinePlayers = onlinePlayers;
             onlinePlayers = new ArrayList<>();
             for (Suggestion suggestion : suggestions.getList()) {
                 String name = suggestion.getText();
                 if (ignoreSelf.get() && name.equals(mc.player.getName().getString())) continue;
-                //if (ignoreInServer.gte() && MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(name) != null) return;
+                //if (ignoreInServer.gte() && mc.getNetworkHandler().getPlayerListEntry(name) != null) return;
                 if (listMode.get() == ListMode.Blacklist) {
                     if (blacklist.get().contains(name)) {
                         continue;
@@ -181,7 +183,7 @@ public class NetworkLoginLogoutNotifier extends Module {
             firstRefresh = false;
             for (String name : prevOnlinePlayers) {
                 if (ignoreSelf.get() && name.equals(mc.player.getName().getString())) continue;
-                //if (ignoreInServer.gte() && MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(name) != null) return;
+                //if (ignoreInServer.gte() && mc.getNetworkHandler().getPlayerListEntry(name) != null) return;
                 if (listMode.get() == ListMode.Blacklist) {
                     if (blacklist.get().contains(name)) {
                         continue;
@@ -200,6 +202,7 @@ public class NetworkLoginLogoutNotifier extends Module {
 
     private void showJoinNotification(String name) {
         if (simpleNotifications.get()) {
+            if (mc.player == null) return;
             mc.player.sendMessage(Text.literal(
                 Formatting.GRAY + "["
                     + Formatting.LIGHT_PURPLE + "Network"
@@ -220,6 +223,7 @@ public class NetworkLoginLogoutNotifier extends Module {
 
     private void showLeaveNotification(String name) {
         if (simpleNotifications.get()) {
+            if (mc.player == null) return;
             mc.player.sendMessage(Text.literal(
                 Formatting.GRAY + "["
                     + Formatting.LIGHT_PURPLE + "Network"

@@ -76,7 +76,7 @@ public class LocatePlayerCommand extends Command {
             MeteorClient.EVENT_BUS.unsubscribe(this);
             return;
         }
-        if (MinecraftClient.getInstance().options.hudHidden || Modules.get().get(PlayerTracers.class).style.get() != PlayerTracers.TracerStyle.Offscreen) return;
+        if (mc.options.hudHidden || Modules.get().get(PlayerTracers.class).style.get() != PlayerTracers.TracerStyle.Offscreen) return;
 
         Renderer2D.COLOR.begin();
 
@@ -85,7 +85,7 @@ public class LocatePlayerCommand extends Command {
         if (Modules.get().get(PlayerTracers.class).blinkOffscreen.get())
             color.a *= Modules.get().get(PlayerTracers.class).getAlpha();
 
-        Vec2f screenCenter = new Vec2f(MinecraftClient.getInstance().getWindow().getFramebufferWidth() / 2.f, mc.getWindow().getFramebufferHeight() / 2.f);
+        Vec2f screenCenter = new Vec2f(mc.getWindow().getFramebufferWidth() / 2.f, mc.getWindow().getFramebufferHeight() / 2.f);
 
         Vector3d projection = new Vector3d(targetPlayer.prevX, targetPlayer.prevY, targetPlayer.prevZ);
         boolean projSucceeded = NametagUtils.to2D(projection, 1, false, false);

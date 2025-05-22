@@ -18,12 +18,14 @@ public class MineplayRobloxWarnPresetsCommand extends Command {
         var argument = argument("player", PlayerArgumentType.create());
         for (RWarnPreset preset : RWarnPreset.values()) {
             argument = argument.then(literal(preset.name()).executes(context -> {
+                if (mc.getNetworkHandler() == null) return SINGLE_SUCCESS;
                 PlayerEntity player = PlayerArgumentType.get(context);
                 mc.getNetworkHandler().sendChatMessage(player.getName().getString() + " " + "Stop " + preset.asString() + ", if you continue, you will be banned");
                 return SINGLE_SUCCESS;
             }));
         }
         argument = argument.then(argument("text", StringArgumentType.greedyString()).executes(context -> {
+            if (mc.getNetworkHandler() == null) return SINGLE_SUCCESS;
             PlayerEntity player = PlayerArgumentType.get(context);
             String text = StringArgumentType.getString(context, "text");
             mc.getNetworkHandler().sendChatMessage(player.getName().getString() + " " + "Stop " + text + ", if you continue, you will be banned");

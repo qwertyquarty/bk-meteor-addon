@@ -12,6 +12,7 @@ public class MineplayBlocksCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
         builder.executes(context -> {
+            if (mc.getNetworkHandler() == null) return SINGLE_SUCCESS;
             mc.getNetworkHandler().sendChatMessage("Use /blocks or /b to open the blocks menu!");
             return SINGLE_SUCCESS;
         });

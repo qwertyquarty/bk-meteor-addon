@@ -93,6 +93,7 @@ public class BadWordFinder extends Module {
         .description("Breaks the signs when found (mineplay only).")
         .defaultValue(false)
         .visible(checkSigns::get)
+        .onChanged(state -> {if (state) refreshSigns();})
         .build()
     );
 
@@ -101,6 +102,7 @@ public class BadWordFinder extends Module {
         .description("Erases the signs when found (doesn't work with break signs) (mineplay only).")
         .defaultValue(false)
         .visible(checkSigns::get)
+        .onChanged(state -> {if (state) refreshSigns();})
         .build()
     );
 
@@ -193,12 +195,14 @@ public class BadWordFinder extends Module {
     private void render(Render3DEvent event) {
         if (!checkSigns.get()) return;
         ESPBlockData signBlockData = signBlockConfig.get();
+        if (mc.world == null) return;
         for (Map.Entry<BlockPos, BadSign> entry : badSigns.entrySet()) {
             BlockPos pos = entry.getKey();
             //BadSign badSign = entry.getValue();
             BlockState state = mc.world.getBlockState(pos);
             if (state == null || !state.hasBlockEntity() || !(state.getBlock() instanceof SignBlock)) {
                 badSigns.remove(pos);
+                return;
             }
             double x = pos.getX();
             double y = pos.getY();
@@ -355,11 +359,11 @@ public class BadWordFinder extends Module {
     private final String suffixPatternNoSpace =
         "(?:" +
         "o" +                                // o
-        "|i[^\\w\\s_]*n[^\\w\\s_]*g" +             // ing
+        "|i[^\\w\\s_]*n[^\\w\\s_]*g" +       // ing
         "|s" +                               // s
-        "|e[^\\w\\s_]*r[^\\w\\s_]*s" +             // ers
-        "|e[^\\w\\s_]*r" +                      // er
-        "|e[^\\w\\s_]*d" +                      // ed
+        "|e[^\\w\\s_]*r[^\\w\\s_]*s" +       // ers
+        "|e[^\\w\\s_]*r" +                   // er
+        "|e[^\\w\\s_]*d" +                   // ed
         ")?";
 
     private boolean doCheckWord(String word, String message) {
@@ -462,13 +466,15 @@ public class BadWordFinder extends Module {
         }
         if (hasBadWord) {
             info(Formatting.RESET + "Bad word " + Formatting.RED + badWord + Formatting.RESET + " found in sign at " + pos.toShortString());
-            if (MineplayUtils.isOnMineplay()) {
+            if (MineplayUtils.isOnMineplay() && mc.getNetworkHandler() != null) {
                 if (breakSigns.get()) {
-                    mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(pos.getX(), pos.getY(), pos.getZ(), false, mc.player.horizontalCollision));
-                    mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
-                    mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), mc.player.getY(), mc.player.getZ(), false, mc.player.horizontalCollision));
-                    badSigns.remove(pos);
-                    return;
+                    if (mc.player != null) {
+                        mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(pos.getX(), pos.getY(), pos.getZ(), false, mc.player.horizontalCollision));
+                        mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
+                        mc.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), mc.player.getY(), mc.player.getZ(), false, mc.player.horizontalCollision));
+                        badSigns.remove(pos);
+                        return;
+                    }
                 } else if (eraseSigns.get()) {
                     mc.getNetworkHandler().sendPacket(new UpdateSignC2SPacket(pos, !back, "", "", "", ""));
                     if (badSigns.containsKey(pos)) {

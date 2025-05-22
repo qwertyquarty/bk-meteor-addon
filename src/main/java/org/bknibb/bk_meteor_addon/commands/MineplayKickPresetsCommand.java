@@ -18,16 +18,19 @@ public class MineplayKickPresetsCommand extends Command {
         var argument = argument("player", PlayerArgumentType.create());
         for (KickPreset preset : KickPreset.values()) {
             argument = argument.then(literal(preset.name()).executes(context -> {
+                if (mc.getNetworkHandler() == null) return SINGLE_SUCCESS;
                 PlayerEntity player = PlayerArgumentType.get(context);
                 mc.getNetworkHandler().sendChatCommand("kick " + player.getName().getString() + " " + "Stop " + preset.asString() + ", if you continue, you will be banned - Kicked Warn");
                 return SINGLE_SUCCESS;
             }).then(literal("-s").executes(context -> {
+                if (mc.getNetworkHandler() == null) return SINGLE_SUCCESS;
                 PlayerEntity player = PlayerArgumentType.get(context);
                 mc.getNetworkHandler().sendChatCommand("kick " + player.getName().getString() + " " + "Stop " + preset.asString() + ", if you continue, you will be banned - Kicked Warn -s");
                 return SINGLE_SUCCESS;
             })));
         }
         argument = argument.then(argument("text", StringArgumentType.greedyString()).executes(context -> {
+            if (mc.getNetworkHandler() == null) return SINGLE_SUCCESS;
             PlayerEntity player = PlayerArgumentType.get(context);
             String text = StringArgumentType.getString(context, "text");
             String command = "kick " + player.getName().getString() + " " + "Stop " + text.replace(" -s", "") + ", if you continue, you will be banned - Kicked Warn";

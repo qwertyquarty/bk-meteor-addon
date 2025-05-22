@@ -15,6 +15,7 @@ public static boolean isRobloxPlayer(PlayerListEntry entry) {
     }
     public static boolean isDisconnectedPlayer(PlayerEntity player) {
         MinecraftClient client = MinecraftClient.getInstance();
+        if (client.getNetworkHandler() == null) return false;
         PlayerListEntry entry = client.getNetworkHandler().getPlayerListEntry(player.getUuid());
         if (entry == null) {
             return false;
@@ -24,6 +25,7 @@ public static boolean isRobloxPlayer(PlayerListEntry entry) {
     }
     public static boolean isDisconnectedPlayer(String player) {
         MinecraftClient client = MinecraftClient.getInstance();
+        if (client.getNetworkHandler() == null) return false;
         PlayerListEntry entry = client.getNetworkHandler().getPlayerListEntry(player);
         if (entry == null) {
             return false;
@@ -50,9 +52,13 @@ public static boolean isRobloxPlayer(PlayerListEntry entry) {
         return (canHide() && player != MinecraftClient.getInstance().player && isDisconnectedPlayer(player));
     }
     public static boolean hidePlayer(PlayerListEntry entry) {
-        return (canHide() && entry.getProfile().getId() != MinecraftClient.getInstance().player.getUuid() && isDisconnectedPlayer(entry));
+        PlayerEntity clientPlayer = MinecraftClient.getInstance().player;
+        if (clientPlayer == null) return false;
+        return (canHide() && entry.getProfile().getId() != clientPlayer.getUuid() && isDisconnectedPlayer(entry));
     }
     public static boolean hidePlayer(String player) {
-        return (canHide() && !player.equals(MinecraftClient.getInstance().player.getName().getString()) && isDisconnectedPlayer(player));
+        PlayerEntity clientPlayer = MinecraftClient.getInstance().player;
+        if (clientPlayer == null) return false;
+        return (canHide() && !player.equals(clientPlayer.getName().getString()) && isDisconnectedPlayer(player));
     }
 }

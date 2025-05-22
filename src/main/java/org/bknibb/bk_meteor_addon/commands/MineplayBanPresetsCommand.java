@@ -18,16 +18,19 @@ public class MineplayBanPresetsCommand extends Command {
         var argument = argument("player", PlayerArgumentType.create());
         for (BanPreset preset : BanPreset.values()) {
             argument = argument.then(literal(preset.name()).executes(context -> {
+                if (mc.getNetworkHandler() == null) return SINGLE_SUCCESS;
                 PlayerEntity player = PlayerArgumentType.get(context);
                 mc.getNetworkHandler().sendChatCommand("ban " + player.getName().getString() + " " + preset.asString());
                 return SINGLE_SUCCESS;
             }).then(literal("-s").executes(context -> {
+                if (mc.getNetworkHandler() == null) return SINGLE_SUCCESS;
                 PlayerEntity player = PlayerArgumentType.get(context);
                 mc.getNetworkHandler().sendChatCommand("ban " + player.getName().getString() + " " + preset.asString() + " -s");
                 return SINGLE_SUCCESS;
             })));
         }
         argument = argument.then(argument("text", StringArgumentType.greedyString()).executes(context -> {
+            if (mc.getNetworkHandler() == null) return SINGLE_SUCCESS;
             PlayerEntity player = PlayerArgumentType.get(context);
             String text = StringArgumentType.getString(context, "text");
             mc.getNetworkHandler().sendChatCommand("ban " + player.getName().getString() + " " + text);

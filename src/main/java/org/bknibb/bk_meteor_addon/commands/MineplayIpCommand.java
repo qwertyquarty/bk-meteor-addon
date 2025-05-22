@@ -12,6 +12,7 @@ public class MineplayIpCommand extends Command {
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
         builder.executes(context -> {
+            if (mc.getNetworkHandler() == null) return SINGLE_SUCCESS;
             mc.getNetworkHandler().sendChatMessage("Java IP: mc.mineplay.nl - Bedrock IP: pe.mineplay.nl");
             return SINGLE_SUCCESS;
         });
