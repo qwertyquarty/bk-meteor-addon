@@ -42,6 +42,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -236,7 +237,7 @@ public class BadWordFinder extends Module {
     private List<String> moderatelyStrictBadWords;
     private List<String> lessStrictBadWords;
     private Map<Character, Character> confusables;
-    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+    private static ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
     @Override
     public void onActivate() {
@@ -251,6 +252,15 @@ public class BadWordFinder extends Module {
     @EventHandler
     public void onLeaveGame(GameLeftEvent event) {
         badSigns.clear();
+        EXECUTOR.shutdownNow();
+//        try {
+//            if (!EXECUTOR.awaitTermination(1, TimeUnit.SECONDS)) {
+//                System.err.println("Executor did not terminate in time.");
+//            }
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        EXECUTOR = Executors.newSingleThreadExecutor();
     }
 
     public List<String> getBadWordsList() {
