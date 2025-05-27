@@ -31,6 +31,13 @@ public class ConfigModifier {
         .build()
     );
 
+    public final Setting<Boolean> chatBotMessageDelayOption = sgBkMeteorAddon.add(new BoolSetting.Builder()
+        .name("chat-bot-message-delay-option")
+        .description("Adds a message delay option to meteor-rejects chat bot (restart required for apply).")
+        .defaultValue(true)
+        .build()
+    );
+
     public static ConfigModifier get() {
         if (INSTANCE == null) INSTANCE = new ConfigModifier();
         return INSTANCE;

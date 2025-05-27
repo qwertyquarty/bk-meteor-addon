@@ -30,3 +30,4 @@ This meteor addon adds a few useful commands and modules, with some features for
 ## Other Features
  - Improves meteor-rejects ChatBot to allow you to get the sender with `<sender>`
  - Improves meteor-rejects ChatBot to allow you to get arguments with `<args>` (warning changes the check from the end of the message to contained in the message)
+ - Improves meteor-rejects ChatBot to add a message delay option
