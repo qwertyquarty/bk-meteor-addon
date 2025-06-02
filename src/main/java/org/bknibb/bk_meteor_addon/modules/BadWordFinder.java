@@ -194,9 +194,10 @@ public class BadWordFinder extends Module {
 
     @EventHandler
     private void render(Render3DEvent event) {
+        if (mc.options.hudHidden) return;
+        if (mc.world == null) return;
         if (!checkSigns.get()) return;
         ESPBlockData signBlockData = signBlockConfig.get();
-        if (mc.world == null) return;
         for (Map.Entry<BlockPos, BadSign> entry : badSigns.entrySet()) {
             BlockPos pos = entry.getKey();
             //BadSign badSign = entry.getValue();
