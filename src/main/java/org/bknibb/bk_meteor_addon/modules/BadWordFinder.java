@@ -18,6 +18,7 @@ import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import meteordevelopment.meteorclient.utils.render.color.Color;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.block.AbstractSignBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SignBlock;
 import net.minecraft.block.entity.BlockEntity;
@@ -202,7 +203,7 @@ public class BadWordFinder extends Module {
             BlockPos pos = entry.getKey();
             //BadSign badSign = entry.getValue();
             BlockState state = mc.world.getBlockState(pos);
-            if (state == null || !state.hasBlockEntity() || !(state.getBlock() instanceof SignBlock)) {
+            if (state == null || !state.hasBlockEntity() || !(state.getBlock() instanceof AbstractSignBlock)) {
                 badSigns.remove(pos);
                 return;
             }
