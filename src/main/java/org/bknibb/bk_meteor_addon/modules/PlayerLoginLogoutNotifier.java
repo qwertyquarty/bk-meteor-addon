@@ -213,6 +213,7 @@ public class PlayerLoginLogoutNotifier extends Module {
 
     @EventHandler
     private void onReceivePacket(PacketEvent.Receive event) {
+        if (!ServerAllowed()) return;
         switch (event.packet) {
             case PlayerListS2CPacket packet when joinsLeavesMode.get().equals(JoinLeaveModes.Both) || joinsLeavesMode.get().equals(JoinLeaveModes.Joins) -> {
 
