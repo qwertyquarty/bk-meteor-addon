@@ -9,6 +9,7 @@ import meteordevelopment.meteorclient.utils.render.MeteorToast;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Items;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -91,6 +92,11 @@ public class UpdatableResourcesManager {
     }
 
     private void DoUpdate(Version newVersion) {
+        try {
+            FileUtils.cleanDirectory(FOLDER);
+        } catch (IOException e) {
+            LOG.warn("Failed to clean up folder (Updatable Resources): " + FOLDER.getAbsolutePath(), e);
+        }
         DownloadFolder("updatable-resources", FOLDER.getAbsolutePath());
         VERSION = newVersion;
         try {
@@ -127,8 +133,7 @@ public class UpdatableResourcesManager {
             case Http.FORBIDDEN -> LOG.warn("Could not fetch updates (Updatable Resources): Rate-limited by GitHub.");
             case Http.NOT_FOUND -> LOG.warn("Could not fetch updates (Updatable Resources): GitHub repository '{}' not found.", REPO.getOwnerName());
             case Http.SUCCESS -> {
-                LOG.info(res.body());
-                Version latestVersion = new Version(res.body());
+                Version latestVersion = new Version(res.body().strip());
                 if (VERSION == null || force) {
                     DoUpdate(latestVersion);
                     return true;
