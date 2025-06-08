@@ -30,7 +30,7 @@ public class UpdatableResourcesManager {
 
     private static final File FOLDER = new File(BkMeteorAddon.FOLDER, "updatable-resources");
     private static final File VERSION_FILE = new File(FOLDER, "version.txt");
-    private static final String VERSION_URL = "https://raw.githubusercontent.com/%s/main/updatable-resources/version.txt".formatted(BkMeteorAddon.INSTNACE.getRepo().getOwnerName());
+    private static final String VERSION_URL = "https://raw.githubusercontent.com/%s/master/updatable-resources/version.txt".formatted(BkMeteorAddon.INSTNACE.getRepo().getOwnerName());
 
     private static Version VERSION = null;
 
@@ -46,13 +46,7 @@ public class UpdatableResourcesManager {
         if (!FOLDER.exists()) {
             FOLDER.mkdir();
         }
-        if (!VERSION_FILE.exists()) {
-            try {
-                VERSION_FILE.createNewFile();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
+        if (VERSION_FILE.exists()) {
             try {
                 VERSION = new Version(Files.readString(VERSION_FILE.toPath()));
             } catch (Exception e) {
@@ -133,6 +127,7 @@ public class UpdatableResourcesManager {
             case Http.FORBIDDEN -> LOG.warn("Could not fetch updates (Updatable Resources): Rate-limited by GitHub.");
             case Http.NOT_FOUND -> LOG.warn("Could not fetch updates (Updatable Resources): GitHub repository '{}' not found.", REPO.getOwnerName());
             case Http.SUCCESS -> {
+                LOG.info(res.body());
                 Version latestVersion = new Version(res.body());
                 if (VERSION == null || force) {
                     DoUpdate(latestVersion);

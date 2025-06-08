@@ -86,7 +86,7 @@ public class VivecraftVanishDetect extends Module {
     private final List<String> tempVrPlayers = new ArrayList<>();
 
     public VivecraftVanishDetect() {
-        super(BkMeteorAddon.CATEGORY, "Vivecraft Vanish Detect", "Detects if a player is in vanish mode using /vr list (the server and the player vanishing must have vivecraft).");
+        super(BkMeteorAddon.CATEGORY, "vivecraft-vanish-detect", "Detects if a player is in vanish mode using /vr list (the server and the player vanishing must have vivecraft).");
     }
 
     @Override
