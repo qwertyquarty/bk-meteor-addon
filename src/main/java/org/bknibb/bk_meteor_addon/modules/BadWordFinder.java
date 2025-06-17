@@ -447,20 +447,20 @@ public class BadWordFinder extends Module {
             if (includeDefaultBadWordList.get()) {
                 for (String word : getBadWordsList()) {
                     if (doCheckWord(word, message)) {
-                        return word.replace("<nospaces>", "");
+                        return word.replace("<nospaces>", "").replace("<nomulti>", "");
                     }
                 }
             }
             for (String word : whitelist.get()) {
                 if (doCheckWord(word, message)) {
-                    return word.replace("<nospaces>", "");
+                    return word.replace("<nospaces>", "").replace("<nomulti>", "");
                 }
             }
         } else {
             for (String word : getBadWordsList()) {
                 if (blacklist.get().contains(word)) continue;
                 if (doCheckWord(word, message)) {
-                    return word.replace("<nospaces>", "");
+                    return word.replace("<nospaces>", "").replace("<nomulti>", "");
                 }
             }
         }
