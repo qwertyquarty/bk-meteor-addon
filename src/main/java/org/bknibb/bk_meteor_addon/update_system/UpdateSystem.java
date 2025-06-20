@@ -19,13 +19,13 @@ import java.util.List;
 public class UpdateSystem {
     private static final CheckMode checkMode = CheckMode.Version;
     public static final Logger LOG = BkMeteorAddon.LOG;
-    public static void checkForUpdates(MeteorAddon addon) {
-        if (checkMode == CheckMode.Commit && addon.getCommit() == null) return;
+    public static boolean checkForUpdates(MeteorAddon addon) {
+        if (checkMode == CheckMode.Commit && addon.getCommit() == null) return false;
         // Check for updates
         GithubRepo repo = addon.getRepo();
         if (repo == null) {
             LOG.warn("Could not check for updates.");
-            return;
+            return false;
         }
         Http.Request request = Http.get("https://api.github.com/repos/%s/releases/latest".formatted(repo.getOwnerName()));
         request.exceptionHandler(e -> LOG.warn("Could not check for updates: " + e.getMessage()));
@@ -53,6 +53,7 @@ public class UpdateSystem {
                     if (!addon.getCommit().equals(resCommit.body().sha)) {
                         LOG.info("A new version of Bk Meteor Addon is available: " + res.body().tag_name);
                         MinecraftClient.getInstance().setScreen(new UpdateScreen(GuiThemes.get(), addon, res.body()));
+                        return true;
                     } else {
                         LOG.info("You are using the latest version of Bk Meteor Addon");
                     }
@@ -62,7 +63,7 @@ public class UpdateSystem {
                         newVersion = Version.parse(res.body().tag_name.substring(1));
                     } catch (VersionParsingException e) {
                         LOG.warn("Could not parse version: " + res.body().tag_name);
-                        return;
+                        return false;
                     }
                     Version version = FabricLoader
                         .getInstance()
@@ -73,6 +74,7 @@ public class UpdateSystem {
                     if (version.compareTo(newVersion) < 0) {
                         LOG.info("A new version of Bk Meteor Addon is available: " + res.body().tag_name);
                         MinecraftClient.getInstance().setScreen(new UpdateScreen(GuiThemes.get(), addon, res.body()));
+                        return true;
                     } else {
                         LOG.info("You are using the latest version of Bk Meteor Addon");
                     }
@@ -80,6 +82,7 @@ public class UpdateSystem {
 
             }
         }
+        return false;
     }
     private enum CheckMode {
         Commit,
