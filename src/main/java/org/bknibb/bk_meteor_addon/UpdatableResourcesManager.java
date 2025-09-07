@@ -114,13 +114,14 @@ public class UpdatableResourcesManager {
 
     public boolean CheckForUpdates(boolean force) {
         Http.Request request = Http.get(VERSION_URL);
-        request.exceptionHandler(e -> LOG.warn("Could not check for updates (Updatable Resources): " + e.getMessage()));
+        request.exceptionHandler(e -> LOG.warn("Could not check for updates (Updatable Resources): {}", e.getMessage()));
         REPO.authenticate(request);
         HttpResponse<String> res = request.sendStringResponse();
         switch (res.statusCode()) {
             case Http.UNAUTHORIZED -> {
                 String message = "Invalid authentication token for repository '%s'".formatted(REPO.getOwnerName());
-                MinecraftClient.getInstance().getToastManager().add(new MeteorToast(Items.BARRIER, "GitHub: Unauthorized", message));
+                //MinecraftClient.getInstance().getToastManager().add(new MeteorToast(Items.BARRIER, "GitHub: Unauthorized", message));
+                MinecraftClient.getInstance().getToastManager().add(new MeteorToast.Builder("GitHub: Unauthorized").icon(Items.BARRIER).text(message).build());
                 LOG.warn(message);
                 if (System.getenv("meteor.github.authorization") == null) {
                     LOG.info("Consider setting an authorization " +

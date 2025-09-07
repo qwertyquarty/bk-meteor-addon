@@ -136,16 +136,16 @@ public class NetworkLoginLogoutNotifier extends Module {
             NbtCompound tag = NbtUtils.fromClipboard();
             if (tag == null) return;
             if (tag.contains("listMode")) {
-                listMode.fromTag(tag.getCompound("listMode"));
+                listMode.fromTag(tag.getCompound("listMode").orElse(null));
             }
             if (tag.contains("blacklist")) {
-                blacklist.fromTag(tag.getCompound("blacklist"));
+                blacklist.fromTag(tag.getCompound("blacklist").orElse(null));
             }
             if (tag.contains("includeFriends")) {
-                includeFriends.fromTag(tag.getCompound("includeFriends"));
+                includeFriends.fromTag(tag.getCompound("includeFriends").orElse(null));
             }
             if (tag.contains("whitelist")) {
-                whitelist.fromTag(tag.getCompound("whitelist"));
+                whitelist.fromTag(tag.getCompound("whitelist").orElse(null));
             }
         };
         list.add(theme.button("Copy Server List Settings")).widget().action = () -> {
@@ -159,13 +159,13 @@ public class NetworkLoginLogoutNotifier extends Module {
             NbtCompound tag = NbtUtils.fromClipboard();
             if (tag == null) return;
             if (tag.contains("serverListMode")) {
-                serverListMode.fromTag(tag.getCompound("serverListMode"));
+                serverListMode.fromTag(tag.getCompound("serverListMode").orElse(null));
             }
             if (tag.contains("serverBlacklist")) {
-                serverBlacklist.fromTag(tag.getCompound("serverBlacklist"));
+                serverBlacklist.fromTag(tag.getCompound("serverBlacklist").orElse(null));
             }
             if (tag.contains("serverWhitelist")) {
-                serverWhitelist.fromTag(tag.getCompound("serverWhitelist"));
+                serverWhitelist.fromTag(tag.getCompound("serverWhitelist").orElse(null));
             }
         };
         return list;
